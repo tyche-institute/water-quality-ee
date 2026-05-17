@@ -1,0 +1,58 @@
+# water-quality-ee — declarative manifest (Aletheia / EATF RFC #72).
+#
+# This is the source of truth for the dataset-publisher agent that emits
+# signed snapshots from this repository. Every Monday at 05:00 UTC the
+# `Citizen snapshot` workflow rebuilds the model and publishes a `.aep`
+# evidence package; the agent identity makes those events attributable
+# in the Aletheia ledger.
+#
+# Registration paths (pick ONE — both are idempotent on the agentId below):
+#
+# 1. Console UI (one-time, manual): log in at https://eatf.eu, switch to
+#    the tenant that owns this repository's `ALETHEIA_API_KEY` (the
+#    `alth_live_…` secret used by `scripts/sign_snapshot.py`), open
+#    "Settings → Agents", click "Register agent", and paste the fields
+#    below. Copy the resulting agentId (URN) into the GitHub repository
+#    secret `ALETHEIA_AGENT_ID`.
+#
+# 2. Workflow path (re-runs on every push): copy this file to
+#    `partner-integrations/water-quality-ee/agent.yaml` in the
+#    the aletheia-ai backend repository. Their `Sync partner agents`
+#    workflow (`.github/workflows/sync-partner-agents.yml`) syncs each
+#    manifest via SSH-bastion to `localhost:8080` on the Hetzner backend
+#    host (the api.eatf.eu Caddy ingress allowlists egress, so external
+#    `PUT /api/v1/agents/{agentId}` returns 401/403 — only the bastion
+#    path works). On first run the workflow creates the agent on the
+#    `EATF_DEMO_TENANT_KEY` tenant; on subsequent runs it patches
+#    mutable fields in place. The URN below is what gets registered.
+#
+# The previous instruction here pointed at `npx -y @eatf/cli@latest`,
+# but `@eatf/cli` was unpublished from npmjs.org during the
+# eatf.duckdns.org → api.eatf.eu migration (May 2026). The package source
+# now lives in `the aletheia-ai backend/sdks/eatf-cli/` and is invoked by
+# the partner-agents workflow above; there is no public npm release.
+#
+# Why DATASET_PUBLISHER (not CONVERSATIONAL/ANALYTICAL/ROBOTIC)?
+#   This agent does not take autonomous actions — it emits signed snapshots
+#   on a schedule. Aletheia treats this as low-action-risk; no human-in-
+#   the-loop approval workflow is required for each publish.
+
+agentId: urn:uuid:5b5b81f0-7c6f-44b1-a0a8-2c8fefcaf9a5
+displayName: h2oatlas snapshot publisher
+description: |
+  Probabilistic risk classifier for Estonian water-quality compliance.
+  Publishes a weekly signed snapshot (model + per-location predictions +
+  feature hashes) under EU AI Act Article 12 traceability requirements.
+  Live at https://h2oatlas.ee/.
+
+agentType: DATASET_PUBLISHER
+riskClassification: limited
+eidasLevel: advanced
+signatureAlgorithm: HYBRID
+primaryJurisdiction: EE
+
+capabilities:
+  - periodic_snapshot
+  - ml_pipeline
+  - evidence_package
+  - regulatory_traceability

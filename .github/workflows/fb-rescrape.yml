@@ -1,0 +1,64 @@
+name: FB Sharing Debugger rescrape
+
+# Forces Facebook to re-fetch the Open Graph metadata for a given URL,
+# bypassing FB's cache. Use after pushing meta changes to make sure the
+# next time a link is shared on FB, the new og:title / og:image show up.
+#
+# Equivalent of clicking "Scrape Again" on
+# https://developers.facebook.com/tools/debug/, but scriptable.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "URL to rescrape (default: https://h2oatlas.ee)"
+        type: string
+        default: "https://h2oatlas.ee"
+      include_top_places:
+        description: "Also rescrape top-10 high-risk places from og-index?"
+        type: boolean
+        default: false
+
+jobs:
+  rescrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rescrape root URL
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$FB_PAGE_ACCESS_TOKEN" ]; then
+            echo "::error::FB_PAGE_ACCESS_TOKEN secret not set"
+            exit 1
+          fi
+          URL="${{ inputs.url }}"
+          echo "Rescraping: $URL"
+          # POST with scrape=true forces re-fetch
+          RESPONSE=$(curl -sS -X POST \
+            "https://graph.facebook.com/v18.0/" \
+            --data-urlencode "id=${URL}" \
+            --data-urlencode "scrape=true" \
+            --data-urlencode "access_token=${FB_PAGE_ACCESS_TOKEN}")
+          echo "$RESPONSE" | jq '.' || echo "$RESPONSE"
+
+      - name: Rescrape top-10 high-risk places
+        if: ${{ inputs.include_top_places }}
+        env:
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: |
+          # Pull a small list of place IDs from the production og-index.
+          curl -s "https://h2oatlas.ee/data/og-index.json" \
+            | jq -r '.places | to_entries
+                | map(select(.value.risk_level == "high"))
+                | .[0:10] | .[].key' \
+            | while read PLACE_ID; do
+                URL="https://h2oatlas.ee/?place=${PLACE_ID}"
+                echo "Rescraping: $URL"
+                curl -sS -X POST "https://graph.facebook.com/v18.0/" \
+                  --data-urlencode "id=${URL}" \
+                  --data-urlencode "scrape=true" \
+                  --data-urlencode "access_token=${FB_PAGE_ACCESS_TOKEN}" \
+                  | jq -r '"\(.og_url // .id // .) — \((.og_image // []) | length) image(s)"' \
+                  || true
+                sleep 1
+              done

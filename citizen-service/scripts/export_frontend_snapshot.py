@@ -1,0 +1,489 @@
+#!/usr/bin/env python3
+"""
+Экспорт frontend-оптимизированного snapshot из citizen-service/artifacts/snapshot.json.
+
+Запуск из корня репозитория:
+  python3 citizen-service/scripts/export_frontend_snapshot.py
+"""
+
+from __future__ import annotations
+
+import json
+import csv
+import re
+import sys
+from pathlib import Path
+from typing import Any
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+from audit.publication_uncertainty import (  # noqa: E402
+    build_place_uncertainty_metadata,
+    summarize_place_uncertainty,
+)
+
+SRC = ROOT / "citizen-service" / "artifacts" / "snapshot.json"
+DST = ROOT / "frontend" / "public" / "data" / "snapshot.frontend.json"
+DST_HISTORY = ROOT / "frontend" / "public" / "data" / "snapshot.history.json"
+DST_DETAILS = ROOT / "frontend" / "public" / "data" / "snapshot.details.json"
+DST_OG_INDEX = ROOT / "frontend" / "public" / "data" / "og-index.json"
+RAW_COMBINED_PATH = ROOT / "data" / "processed" / "raw_combined.csv"
+HISTORY_MEASUREMENT_COLUMNS = [
+    "e_coli",
+    "enterococci",
+    "coliforms",
+    "pseudomonas",
+    "staphylococci",
+    "ph",
+    "nitrates",
+    "nitrites",
+    "ammonium",
+    "fluoride",
+    "manganese",
+    "iron",
+    "turbidity",
+    "color",
+    "chlorides",
+    "sulfates",
+    "free_chlorine",
+    "combined_chlorine",
+    "oxidizability",
+    "colonies_37c",
+    "transparency",
+]
+MAX_REFRESH_HISTORY = 8
+
+
+def risk_from_prob(prob: Any) -> str:
+    if not isinstance(prob, (int, float)):
+        return "unknown"
+    p = float(prob)
+    if p >= 0.7:
+        return "high"
+    if p >= 0.4:
+        return "medium"
+    return "low"
+
+
+def _num_or_none(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
+def _measurement_dict_from_row(row: dict[str, Any]) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for col in HISTORY_MEASUREMENT_COLUMNS:
+        raw = row.get(col)
+        if raw in (None, ""):
+            continue
+        if isinstance(raw, str):
+            raw = raw.replace(",", ".").strip()
+        try:
+            val = float(raw)
+        except (TypeError, ValueError):
+            continue
+        if val != val:  # NaN
+            continue
+        out[col] = val
+    return out
+
+
+def _build_uncertainty_from_source_place(place: dict[str, Any]) -> dict[str, Any]:
+    series_data: dict[str, Any] = {
+        "domain": place.get("domain"),
+        "compliant": place.get("official_compliant"),
+    }
+    measurements = place.get("measurements") or {}
+    if isinstance(measurements, dict):
+        series_data.update(measurements)
+    return build_place_uncertainty_metadata(pd.Series(series_data))
+
+
+def _build_history_index() -> dict[tuple[str, str], list[dict[str, Any]]]:
+    """
+    История по (domain, location) из data/processed/raw_combined.csv.
+    Возвращает последние пробы в порядке убывания даты.
+    """
+    history: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    if not RAW_COMBINED_PATH.is_file():
+        return history
+
+    with open(RAW_COMBINED_PATH, encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            domain = str(row.get("domain") or "").strip()
+            location = str(row.get("location") or "").strip()
+            if not domain or not location:
+                continue
+            sample_date = str(row.get("sample_date") or "").strip()
+            if not sample_date:
+                continue
+            compliant_raw = row.get("compliant")
+            compliant: int | None = None
+            if compliant_raw in ("0", "1"):
+                compliant = int(compliant_raw)
+            key = (domain, location)
+            history.setdefault(key, []).append(
+                {
+                    "sample_date": sample_date.replace(" ", "T"),
+                    "official_compliant": compliant,
+                    "measurements": _measurement_dict_from_row(row),
+                }
+            )
+
+    for k, items in history.items():
+        items.sort(key=lambda x: str(x["sample_date"]), reverse=True)
+        history[k] = items[:30]
+    return history
+
+
+def _normalize_location_for_history(domain: str, location: str) -> str:
+    """
+    Нормализация имени локации для устойчивого матчингa истории:
+    - lower + trim
+    - удаление типичных доменных суффиксов
+    - нормализация пробелов/пунктуации
+    """
+    n = (location or "").lower().strip()
+    n = re.sub(r"\bsupluskoht\b", "", n)
+    n = re.sub(r"\bsupluskoha\b", "", n)
+    n = re.sub(r"\brand\b", "", n)
+    n = re.sub(r"\bsuplusala\b", "", n)
+    n = re.sub(r"\bühistveevärk\b", "", n)
+    n = re.sub(r"\bühisveevärk\b", "", n)
+    n = re.sub(r"\bveevärk\b", "", n)
+    n = re.sub(r"\bveevõrk\b", "", n)
+    n = re.sub(r"\bveevork\b", "", n)
+    n = re.sub(r"[-–—]+", " ", n)
+    n = re.sub(r"[,;]+", " ", n)
+    n = re.sub(r"\s+", " ", n).strip()
+    return f"{domain}|{n}"
+
+
+def _to_float_or_none(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
+def _build_refresh_history_entry(snapshot: dict[str, Any]) -> dict[str, Any]:
+    diagnostics = snapshot.get("diagnostics") or {}
+    uncertainty_summary = diagnostics.get("uncertainty_summary") or {}
+    publication_gap_count = snapshot.get("publication_gap_count")
+    if publication_gap_count is None:
+        publication_gap_count = uncertainty_summary.get("places_with_publication_gap")
+    return {
+        "generated_at": snapshot.get("generated_at"),
+        "data_fetched_at": snapshot.get("data_fetched_at"),
+        "model_trained_at": snapshot.get("model_trained_at"),
+        "git_sha": snapshot.get("git_sha"),
+        "model_version": snapshot.get("model_version"),
+        "places_count": int(snapshot.get("places_count") or 0),
+        "official_violation_share": _to_float_or_none(
+            snapshot.get("official_violation_share", diagnostics.get("official_violation_share"))
+        ),
+        "model_coverage_share": float(
+            snapshot.get("model_coverage_share", diagnostics.get("model_coverage_share") or 0.0)
+        ),
+        "publication_gap_count": int(publication_gap_count or 0),
+    }
+
+
+def _same_refresh_entry(left: dict[str, Any], right: dict[str, Any]) -> bool:
+    return (
+        left.get("generated_at") == right.get("generated_at")
+        and left.get("git_sha") == right.get("git_sha")
+        and left.get("places_count") == right.get("places_count")
+    )
+
+
+def _with_delta(current: dict[str, Any], previous: dict[str, Any] | None) -> dict[str, Any]:
+    out = dict(current)
+    if previous is None:
+        out["changes_from_previous"] = None
+        return out
+
+    current_violation = _to_float_or_none(current.get("official_violation_share"))
+    previous_violation = _to_float_or_none(previous.get("official_violation_share"))
+    violation_delta_pp = None
+    if current_violation is not None and previous_violation is not None:
+        violation_delta_pp = round((current_violation - previous_violation) * 100, 1)
+
+    current_coverage = _to_float_or_none(current.get("model_coverage_share"))
+    previous_coverage = _to_float_or_none(previous.get("model_coverage_share"))
+    coverage_delta_pp = None
+    if current_coverage is not None and previous_coverage is not None:
+        coverage_delta_pp = round((current_coverage - previous_coverage) * 100, 1)
+
+    out["changes_from_previous"] = {
+        "places_count_delta": int(current.get("places_count") or 0) - int(previous.get("places_count") or 0),
+        "official_violation_share_delta_pp": violation_delta_pp,
+        "model_coverage_share_delta_pp": coverage_delta_pp,
+        "publication_gap_count_delta": int(current.get("publication_gap_count") or 0)
+        - int(previous.get("publication_gap_count") or 0),
+    }
+    return out
+
+
+def _build_refresh_history(current_snapshot: dict[str, Any], previous_snapshot: dict[str, Any] | None) -> list[dict[str, Any]]:
+    current_entry = _build_refresh_history_entry(current_snapshot)
+    previous_entries: list[dict[str, Any]] = []
+    if isinstance(previous_snapshot, dict):
+        raw_history = previous_snapshot.get("refresh_history")
+        if isinstance(raw_history, list):
+            previous_entries = [dict(entry) for entry in raw_history if isinstance(entry, dict)]
+        else:
+            previous_entries = [_build_refresh_history_entry(previous_snapshot)]
+
+    deduped: list[dict[str, Any]] = [current_entry]
+    for entry in previous_entries:
+        if _same_refresh_entry(deduped[-1], entry):
+            continue
+        deduped.append(_build_refresh_history_entry(entry))
+        if len(deduped) >= MAX_REFRESH_HISTORY:
+            break
+
+    history: list[dict[str, Any]] = []
+    for idx, entry in enumerate(deduped):
+        history.append(_with_delta(entry, deduped[idx + 1] if idx + 1 < len(deduped) else None))
+    return history
+
+
+def main() -> None:
+    payload = json.loads(SRC.read_text(encoding="utf-8"))
+    previous_frontend_snapshot = None
+    if DST.is_file():
+        try:
+            previous_frontend_snapshot = json.loads(DST.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            previous_frontend_snapshot = None
+    places = payload.get("places") or []
+    history_index = _build_history_index()
+    history_index_norm: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for (domain, location), items in history_index.items():
+        key = (domain, _normalize_location_for_history(domain, location))
+        prev = history_index_norm.get(key, [])
+        merged = prev + items
+        merged.sort(key=lambda x: str(x["sample_date"]), reverse=True)
+        history_index_norm[key] = merged[:30]
+    out_places = []
+    details_map: dict[str, dict[str, Any]] = {}
+
+    for idx, p in enumerate(places):
+        lat, lon = p.get("lat"), p.get("lon")
+        if not isinstance(lat, (int, float)) or not isinstance(lon, (int, float)):
+            continue
+        lr_prob = _num_or_none(p.get("lr_violation_prob"))
+        rf_prob = _num_or_none(p.get("rf_violation_prob"))
+        gb_prob = _num_or_none(p.get("gb_violation_prob"))
+        lgbm_prob = _num_or_none(p.get("lgbm_violation_prob"))
+        # Canonical "map risk" probability: LightGBM when available —
+        # historically we exported RF here ("backward compatibility"
+        # comment in build_citizen_snapshot.py), but LGBM has the best
+        # validation metrics of the four models, so the map layer now
+        # reflects LGBM's prediction by default. Fall back to the
+        # legacy `model_violation_prob` field, then RF, then the first
+        # available prob.
+        lgbm_first = [lgbm_prob, rf_prob, gb_prob, lr_prob]
+        canonical_prob = next((v for v in lgbm_first if v is not None), None)
+        model_prob = _num_or_none(p.get("model_violation_prob"))
+        if canonical_prob is not None:
+            model_prob = canonical_prob
+        elif model_prob is None:
+            # very old snapshot with no per-model columns — keep whatever
+            # model_violation_prob already held (usually None).
+            pass
+        location = str(p.get("location") or "").strip()
+        county = p.get("county")
+        domain = str(p.get("domain") or "other")
+        place_kind = str(p.get("place_kind") or "other")
+        # History priority: 1) snapshot.json (built by build_citizen_snapshot),
+        # 2) raw_combined.csv exact match, 3) raw_combined.csv normalized match.
+        sample_history = p.get("sample_history") or []
+        if not sample_history:
+            history_key = (domain, location)
+            sample_history = history_index.get(history_key, [])
+        if not sample_history:
+            history_key_norm = (domain, _normalize_location_for_history(domain, location))
+            sample_history = history_index_norm.get(history_key_norm, [])
+        search_text = " ".join(
+            [
+                location.lower(),
+                str(county or "").lower(),
+                domain.lower(),
+                place_kind.lower(),
+            ]
+        ).strip()
+
+        measurements = p.get("measurements") or {}
+        if not isinstance(measurements, dict):
+            measurements = {}
+
+        place_out = {
+            "id": str(p.get("sample_id") or f"place-{idx}"),
+            "location": location,
+            "domain": domain,
+            "place_kind": place_kind,
+            "county": county,
+            "sample_date": p.get("sample_date"),
+            "official_compliant": p.get("official_compliant"),
+            "coord_source": p.get("coord_source"),
+            "lat": float(lat),
+            "lon": float(lon),
+            "model_violation_prob": model_prob,
+            "lr_violation_prob": lr_prob,
+            "rf_violation_prob": rf_prob,
+            "gb_violation_prob": gb_prob,
+            "lgbm_violation_prob": lgbm_prob,
+            "risk_level": risk_from_prob(model_prob),
+            "has_model_prob": model_prob is not None,
+            "search_text": search_text,
+            "measurements_count": len(measurements),
+        }
+        uncertainty_metadata = {
+            "audit_bucket": p.get("audit_bucket"),
+            "deterministic_norms_violation": p.get("deterministic_norms_violation"),
+            "n_measured_norm_params": p.get("n_measured_norm_params"),
+            "n_total_norm_params": p.get("n_total_norm_params"),
+            "norm_coverage_ratio": p.get("norm_coverage_ratio"),
+            "data_quality_flags": p.get("data_quality_flags"),
+            "uncertainty_level": p.get("uncertainty_level"),
+        }
+        if not uncertainty_metadata["audit_bucket"]:
+            uncertainty_metadata = _build_uncertainty_from_source_place(p)
+        place_out.update(uncertainty_metadata)
+        details_map[place_out["id"]] = {
+            "measurements": measurements,
+            "sample_history": sample_history[:12],
+        }
+        # AI Act Art 12 per-place provenance (optional; absent on older snapshots).
+        for provenance_key in ("prediction_id", "feature_hash", "model_version", "created_at"):
+            v = p.get(provenance_key)
+            if v:
+                place_out[provenance_key] = v
+        out_places.append(place_out)
+
+    official_known = [x for x in out_places if isinstance(x.get("official_compliant"), int)]
+    official_compliant_share = None
+    official_violation_share = None
+    if official_known:
+        compliant = sum(1 for x in official_known if x.get("official_compliant") == 1)
+        violation = sum(1 for x in official_known if x.get("official_compliant") == 0)
+        official_compliant_share = compliant / len(official_known)
+        official_violation_share = violation / len(official_known)
+
+    model_cols = {
+        "lr": "lr_violation_prob",
+        "rf": "rf_violation_prob",
+        "gb": "gb_violation_prob",
+        "lgbm": "lgbm_violation_prob",
+    }
+    mean_model_probabilities: dict[str, float | None] = {}
+    for key, col in model_cols.items():
+        vals = [x[col] for x in out_places if isinstance(x.get(col), (int, float))]
+        mean_model_probabilities[key] = (sum(vals) / len(vals)) if vals else None
+
+    model_covered = sum(1 for x in out_places if x.get("has_model_prob"))
+    model_coverage_share = (model_covered / len(out_places)) if out_places else 0.0
+
+    # Which model's probability was used to derive `risk_level` and the
+    # map's color coding? The frontend labels the canonical model next
+    # to the risk chip so users aren't left guessing ("I thought LGBM
+    # was the best model?!"). This is derived from which per-model
+    # column actually populated the first non-null `model_prob` — with
+    # LGBM preferred, then RF, then GB, then LR.
+    canonical_model = None
+    for place_idx, raw in enumerate(places[: len(out_places)]):
+        if out_places[place_idx].get("model_violation_prob") is None:
+            continue
+        if _num_or_none(raw.get("lgbm_violation_prob")) is not None:
+            canonical_model = "LightGBM"
+        elif _num_or_none(raw.get("rf_violation_prob")) is not None:
+            canonical_model = "Random Forest"
+        elif _num_or_none(raw.get("gb_violation_prob")) is not None:
+            canonical_model = "Gradient Boosting"
+        elif _num_or_none(raw.get("lr_violation_prob")) is not None:
+            canonical_model = "Logistic Regression"
+        break
+
+    out_payload = {
+        "generated_at": payload.get("generated_at"),
+        "data_fetched_at": payload.get("data_fetched_at"),
+        "model_trained_at": payload.get("model_trained_at"),
+        "has_model_predictions": bool(payload.get("has_model_predictions")),
+        "available_models": payload.get("available_models") or [],
+        "model_labels": payload.get("model_labels") or {},
+        "canonical_model": canonical_model,
+        "data_catalog_url": payload.get("data_catalog_url"),
+        "disclaimer": payload.get("disclaimer"),
+        "places_count": len(out_places),
+        "place_kinds": payload.get("place_kinds") or {},
+        "domains": sorted({x["domain"] for x in out_places}),
+        "diagnostics": {
+            "official_compliant_share": official_compliant_share,
+            "official_violation_share": official_violation_share,
+            "model_coverage_share": model_coverage_share,
+            "mean_model_probabilities": mean_model_probabilities,
+            "uncertainty_summary": payload.get("uncertainty_summary") or summarize_place_uncertainty(out_places),
+        },
+        "places": out_places,
+    }
+    # AI Act Art 12 snapshot-level provenance (optional; absent on older snapshots).
+    for provenance_key in ("model_version", "git_sha", "feature_hash_columns"):
+        v = payload.get(provenance_key)
+        if v is not None:
+            out_payload[provenance_key] = v
+    out_payload["refresh_history"] = _build_refresh_history(out_payload, previous_frontend_snapshot)
+
+    # Split sample_history and per-place measurements into separate lazy-loaded files.
+    history_map: dict[str, list] = {}
+    for place_id, detail in details_map.items():
+        h = detail.pop("sample_history", [])
+        if h:
+            history_map[place_id] = h
+
+    DST.parent.mkdir(parents=True, exist_ok=True)
+    DST.write_text(json.dumps(out_payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    DST_HISTORY.write_text(json.dumps(history_map, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    DST_DETAILS.write_text(json.dumps(details_map, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported {len(out_places)} places to {DST}")
+    print(f"Exported {len(history_map)} place histories to {DST_HISTORY} ({DST_HISTORY.stat().st_size / 1024:.0f} KB)")
+    print(f"Exported {len(details_map)} place details to {DST_DETAILS} ({DST_DETAILS.stat().st_size / 1024:.0f} KB)")
+
+    # Lightweight per-place index used by:
+    #   - frontend `generateMetadata()` to build per-place social previews
+    #     (title / description / og:image URL) without parsing the 7 MB snapshot;
+    #   - the OG worker to render dynamic 1200×630 PNG cards;
+    #   - sitemap.ts to rank top-N most interesting places.
+    # Schema: { places: { id: { name, county, risk_level, status } } }
+    og_places: dict[str, dict[str, Any]] = {}
+    for p in out_places:
+        compliant = p.get("official_compliant")
+        if compliant == 1:
+            status = "compliant"
+        elif compliant == 0:
+            status = "violation"
+        else:
+            status = "unknown"
+        og_places[p["id"]] = {
+            "name": p.get("location") or "",
+            "county": p.get("county"),
+            "risk_level": p.get("risk_level") or "unknown",
+            "status": status,
+        }
+    og_payload = {
+        "_doc": "Lightweight per-place metadata for Open Graph previews. Generated by export_frontend_snapshot.py. Schema: { places: { id: { name, county, risk_level, status } } }.",
+        "generated_at": payload.get("generated_at"),
+        "places": og_places,
+    }
+    DST_OG_INDEX.write_text(json.dumps(og_payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported {len(og_places)} OG-index entries to {DST_OG_INDEX} ({DST_OG_INDEX.stat().st_size / 1024:.0f} KB)")
+
+
+if __name__ == "__main__":
+    main()

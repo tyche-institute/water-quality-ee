@@ -1,0 +1,151 @@
+"use client";
+
+import type { ComponentProps } from "react";
+import type DashboardMapCanvas from "../components/DashboardMapCanvas";
+import type DashboardSelectedPlaceWorkspace from "../components/DashboardSelectedPlaceWorkspace";
+
+export type DashboardMapCanvasProps = ComponentProps<typeof DashboardMapCanvas>;
+export type DashboardSelectedPlaceWorkspaceProps = ComponentProps<typeof DashboardSelectedPlaceWorkspace>;
+
+export type DashboardMapWorkspaceCanvasInput = {
+  mapPanelRef: DashboardMapCanvasProps["mapPanelRef"];
+  chipBarRef: DashboardMapCanvasProps["chipBarRef"];
+  lang: DashboardMapCanvasProps["lang"];
+  title: DashboardMapCanvasProps["title"];
+  filtersLabel: DashboardMapCanvasProps["filtersLabel"];
+  clearFiltersLabel: DashboardMapCanvasProps["clearFiltersLabel"];
+  nearMeLabel: DashboardMapCanvasProps["nearMeLabel"];
+  isMapFullscreen: DashboardMapCanvasProps["isMapFullscreen"];
+  isMobile: DashboardMapCanvasProps["isMobile"];
+  chipPos: DashboardMapCanvasProps["chipPos"];
+  segment: DashboardMapCanvasProps["segment"];
+  alertsOnly: DashboardMapCanvasProps["alertsOnly"];
+  nearbyOnly: DashboardMapCanvasProps["nearbyOnly"];
+  risk: DashboardMapCanvasProps["risk"];
+  userCoords: DashboardMapCanvasProps["userCoords"];
+  snapshotPlaces: DashboardMapCanvasProps["snapshotPlaces"];
+  mapPlaces: DashboardMapCanvasProps["mapPlaces"];
+  selectedPlace: DashboardMapCanvasProps["selectedPlace"];
+  selectedCounty: DashboardMapCanvasProps["selectedCounty"];
+  mobileBottomOverlayPx: DashboardMapCanvasProps["mobileBottomOverlayPx"];
+  countyGeoJson: DashboardMapCanvasProps["countyGeoJson"];
+  fitBoundsKey: DashboardMapCanvasProps["fitBoundsKey"];
+  fitBoundsPlaces: DashboardMapCanvasProps["fitBoundsPlaces"];
+  onSelectPoint: DashboardMapCanvasProps["onSelectPoint"];
+  onSelectCluster: DashboardMapCanvasProps["onSelectCluster"];
+  onSelectCounty: DashboardMapCanvasProps["onSelectCounty"];
+  onToggleFullscreen: DashboardMapCanvasProps["onToggleFullscreen"];
+  onActivateNearMe: DashboardMapCanvasProps["onActivateNearMe"];
+  onSelectAllSegment: DashboardMapCanvasProps["onSelectAllSegment"];
+  onToggleSegment: DashboardMapCanvasProps["onToggleSegment"];
+  onToggleAlerts: DashboardMapCanvasProps["onToggleAlerts"];
+  onToggleNearMe: DashboardMapCanvasProps["onToggleNearMe"];
+  onClearRisk: DashboardMapCanvasProps["onClearRisk"];
+  onClearFilters: DashboardMapCanvasProps["onClearFilters"];
+  onChipPointerDown: DashboardMapCanvasProps["onChipPointerDown"];
+  onChipPointerMove: DashboardMapCanvasProps["onChipPointerMove"];
+  onChipPointerUp: DashboardMapCanvasProps["onChipPointerUp"];
+  onChipClickCapture: DashboardMapCanvasProps["onChipClickCapture"];
+};
+
+export type DashboardMapWorkspaceSelectedPlaceInput = {
+  desktopDetailRef: DashboardSelectedPlaceWorkspaceProps["desktopDetailRef"];
+  lang: DashboardSelectedPlaceWorkspaceProps["lang"];
+  snapshot: DashboardSelectedPlaceWorkspaceProps["snapshot"];
+  selectedPlace: DashboardSelectedPlaceWorkspaceProps["selectedPlace"];
+  clusterPlaces: DashboardSelectedPlaceWorkspaceProps["clusterPlaces"];
+  watchlist: DashboardSelectedPlaceWorkspaceProps["watchlist"];
+  measurementsOpen: DashboardSelectedPlaceWorkspaceProps["measurementsOpen"];
+  historyOpen: DashboardSelectedPlaceWorkspaceProps["historyOpen"];
+  historyPlaceholder: DashboardSelectedPlaceWorkspaceProps["historyPlaceholder"];
+  selectedPointTitle: DashboardSelectedPlaceWorkspaceProps["selectedPointTitle"];
+  emptySelectedPointHint: DashboardSelectedPlaceWorkspaceProps["emptySelectedPointHint"];
+  measurementsLabel: DashboardSelectedPlaceWorkspaceProps["measurementsLabel"];
+  historyLabel: DashboardSelectedPlaceWorkspaceProps["historyLabel"];
+  closeLabel: DashboardSelectedPlaceWorkspaceProps["closeLabel"];
+  clearFiltersLabel: DashboardSelectedPlaceWorkspaceProps["clearFiltersLabel"];
+  countyLabel: DashboardSelectedPlaceWorkspaceProps["countyLabel"];
+  riskLabelText: DashboardSelectedPlaceWorkspaceProps["riskLabelText"];
+  officialLabelText: DashboardSelectedPlaceWorkspaceProps["officialLabelText"];
+  minProbLabel: DashboardSelectedPlaceWorkspaceProps["minProbLabel"];
+  latestSampleDateLabel: DashboardSelectedPlaceWorkspaceProps["latestSampleDateLabel"];
+  dateFromLabel: DashboardSelectedPlaceWorkspaceProps["dateFromLabel"];
+  dateToLabel: DashboardSelectedPlaceWorkspaceProps["dateToLabel"];
+  resetDateLabel: DashboardSelectedPlaceWorkspaceProps["resetDateLabel"];
+  latestSampleDateHint: DashboardSelectedPlaceWorkspaceProps["latestSampleDateHint"];
+  nearRadiusLabel: DashboardSelectedPlaceWorkspaceProps["nearRadiusLabel"];
+  clearNearMeLabel: DashboardSelectedPlaceWorkspaceProps["clearNearMeLabel"];
+  themeLightLabel: DashboardSelectedPlaceWorkspaceProps["themeLightLabel"];
+  themeDarkLabel: DashboardSelectedPlaceWorkspaceProps["themeDarkLabel"];
+  filteredCount: DashboardSelectedPlaceWorkspaceProps["filteredCount"];
+  dataFetchedLabel: DashboardSelectedPlaceWorkspaceProps["dataFetchedLabel"];
+  modelTrainedLabel: DashboardSelectedPlaceWorkspaceProps["modelTrainedLabel"];
+  dataFreshnessLevel: DashboardSelectedPlaceWorkspaceProps["dataFreshnessLevel"];
+  modelFreshnessLevel: DashboardSelectedPlaceWorkspaceProps["modelFreshnessLevel"];
+  freshnessLabel: DashboardSelectedPlaceWorkspaceProps["freshnessLabel"];
+  highCount: DashboardSelectedPlaceWorkspaceProps["highCount"];
+  lowCount: DashboardSelectedPlaceWorkspaceProps["lowCount"];
+  violationsCount: DashboardSelectedPlaceWorkspaceProps["violationsCount"];
+  riskOrder: DashboardSelectedPlaceWorkspaceProps["riskOrder"];
+  officialOrder: DashboardSelectedPlaceWorkspaceProps["officialOrder"];
+  county: DashboardSelectedPlaceWorkspaceProps["county"];
+  risk: DashboardSelectedPlaceWorkspaceProps["risk"];
+  official: DashboardSelectedPlaceWorkspaceProps["official"];
+  minProb: DashboardSelectedPlaceWorkspaceProps["minProb"];
+  minProbInput: DashboardSelectedPlaceWorkspaceProps["minProbInput"];
+  sampleDateFrom: DashboardSelectedPlaceWorkspaceProps["sampleDateFrom"];
+  sampleDateTo: DashboardSelectedPlaceWorkspaceProps["sampleDateTo"];
+  nearbyOnly: DashboardSelectedPlaceWorkspaceProps["nearbyOnly"];
+  nearbyRadiusKm: DashboardSelectedPlaceWorkspaceProps["nearbyRadiusKm"];
+  userCoords: DashboardSelectedPlaceWorkspaceProps["userCoords"];
+  geoError: DashboardSelectedPlaceWorkspaceProps["geoError"];
+  counties: DashboardSelectedPlaceWorkspaceProps["counties"];
+  theme: DashboardSelectedPlaceWorkspaceProps["theme"];
+  mobilePanelState: DashboardSelectedPlaceWorkspaceProps["mobilePanelState"];
+  sheetMode: DashboardSelectedPlaceWorkspaceProps["sheetMode"];
+  sheetDragging: DashboardSelectedPlaceWorkspaceProps["sheetDragging"];
+  sheetDragOffset: DashboardSelectedPlaceWorkspaceProps["sheetDragOffset"];
+  placeKindLabel: DashboardSelectedPlaceWorkspaceProps["placeKindLabel"];
+  countyPretty: DashboardSelectedPlaceWorkspaceProps["countyPretty"];
+  officialStatusText: DashboardSelectedPlaceWorkspaceProps["officialStatusText"];
+  explainViolation: DashboardSelectedPlaceWorkspaceProps["explainViolation"];
+  explainMeasurementNorm: DashboardSelectedPlaceWorkspaceProps["explainMeasurementNorm"];
+  explainHistoryMeasurements: DashboardSelectedPlaceWorkspaceProps["explainHistoryMeasurements"];
+  explainViolationFromHistory: DashboardSelectedPlaceWorkspaceProps["explainViolationFromHistory"];
+  labelForParam: DashboardSelectedPlaceWorkspaceProps["labelForParam"];
+  descForParam: DashboardSelectedPlaceWorkspaceProps["descForParam"];
+  openInfo: DashboardSelectedPlaceWorkspaceProps["openInfo"];
+  onSelectPoint: DashboardSelectedPlaceWorkspaceProps["onSelectPoint"];
+  onToggleWatch: DashboardSelectedPlaceWorkspaceProps["onToggleWatch"];
+  onToggleMeasurements: DashboardSelectedPlaceWorkspaceProps["onToggleMeasurements"];
+  onToggleHistory: DashboardSelectedPlaceWorkspaceProps["onToggleHistory"];
+  onCyclePanelState: DashboardSelectedPlaceWorkspaceProps["onCyclePanelState"];
+  onSheetPointerDown: DashboardSelectedPlaceWorkspaceProps["onSheetPointerDown"];
+  onSheetPointerMove: DashboardSelectedPlaceWorkspaceProps["onSheetPointerMove"];
+  onSheetPointerUp: DashboardSelectedPlaceWorkspaceProps["onSheetPointerUp"];
+  onSheetPointerCancel: DashboardSelectedPlaceWorkspaceProps["onSheetPointerCancel"];
+  onClearFilters: DashboardSelectedPlaceWorkspaceProps["onClearFilters"];
+  onCloseFilterMode: DashboardSelectedPlaceWorkspaceProps["onCloseFilterMode"];
+  onClosePlaceMode: DashboardSelectedPlaceWorkspaceProps["onClosePlaceMode"];
+  onSetCounty: DashboardSelectedPlaceWorkspaceProps["onSetCounty"];
+  onSetRisk: DashboardSelectedPlaceWorkspaceProps["onSetRisk"];
+  onSetOfficial: DashboardSelectedPlaceWorkspaceProps["onSetOfficial"];
+  onSetMinProbInput: DashboardSelectedPlaceWorkspaceProps["onSetMinProbInput"];
+  onSetSampleDateFrom: DashboardSelectedPlaceWorkspaceProps["onSetSampleDateFrom"];
+  onSetSampleDateTo: DashboardSelectedPlaceWorkspaceProps["onSetSampleDateTo"];
+  onClearSampleDates: DashboardSelectedPlaceWorkspaceProps["onClearSampleDates"];
+  onSetNearbyRadiusKm: DashboardSelectedPlaceWorkspaceProps["onSetNearbyRadiusKm"];
+  onClearNearMe: DashboardSelectedPlaceWorkspaceProps["onClearNearMe"];
+  onSetTheme: DashboardSelectedPlaceWorkspaceProps["onSetTheme"];
+  onSetLang: DashboardSelectedPlaceWorkspaceProps["onSetLang"];
+};
+
+export function buildDashboardMapCanvasProps(input: DashboardMapWorkspaceCanvasInput): DashboardMapCanvasProps {
+  return { ...input };
+}
+
+export function buildDashboardSelectedPlaceWorkspaceProps(
+  input: DashboardMapWorkspaceSelectedPlaceInput,
+): DashboardSelectedPlaceWorkspaceProps {
+  return { ...input };
+}

@@ -1,0 +1,16 @@
+{
+  "dashboard": {
+    "freshUntilDays": 8,
+    "agingFromDays": 8,
+    "staleFromDays": 14
+  },
+  "scheduledPublish": {
+    "weeklySnapshotFloorUtc": "Monday 04:00",
+    "weeklyDeadlineSmokeUtc": "Monday 05:45",
+    "maxGeneratedAgeHours": 2
+  },
+  "manualRelease": {
+    "normalPublishMaxAgeDays": 13,
+    "staleFromDays": 14
+  }
+}

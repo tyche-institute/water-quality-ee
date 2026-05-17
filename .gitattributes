@@ -1,0 +1,5 @@
+*.joblib filter=lfs diff=lfs merge=lfs -text
+citizen-service/artifacts/snapshot.json filter=lfs diff=lfs merge=lfs -text
+frontend/public/data/snapshot.history.json filter=lfs diff=lfs merge=lfs -text
+frontend/public/data/snapshot.frontend.json filter=lfs diff=lfs merge=lfs -text
+frontend/public/data/snapshot.aep filter=lfs diff=lfs merge=lfs -text

@@ -1,0 +1,250 @@
+# Aletheia backend healthcheck — verifies two independent invariants
+# that the citizen-snapshot workflow depends on, both forced so a
+# regression fails loudly instead of silently:
+#
+#   1. SIGNING. `--mode backend` forces a real round-trip to the
+#      Aletheia backend (no local fallback). A missing/unreachable
+#      backend or an expired API key surfaces here as a hard failure
+#      instead of as a silent local_dev fallback in the weekly snapshot.
+#   2. ATTRIBUTION. `GET /api/v1/agents` is checked for the URN in
+#      ALETHEIA_AGENT_ID. The signing step alone does not catch a
+#      missing agent record — the backend accepts any agentId in the
+#      request body without validating registration, so a deleted
+#      agent only surfaces in the eatf.eu console UI, not in the
+#      bundle. This step closes that blind spot.
+#
+# Use case:
+#   - daily early-warning that ALETHEIA_BACKEND_URL / ALETHEIA_API_KEY /
+#     ALETHEIA_AGENT_ID still produce a valid PQC `.aep` AND that the
+#     URN we attach is still a registered agent on the API key's
+#     tenant. Without this, a backend outage, an expired key, or a
+#     deleted agent only surfaces on the weekly cron at Monday 04:00
+#     UTC — by which point the citizen snapshot has already published
+#     a `local_dev` (RSA-only) bundle or a backend-signed bundle with
+#     an orphan agent URN to h2oatlas.ee. Both modes started this
+#     workflow's existence (see commit history of citizen-snapshot.yml
+#     and PR #139).
+#   - on demand after rotating ALETHEIA_BACKEND_URL / ALETHEIA_API_KEY /
+#     ALETHEIA_AGENT_ID, or to confirm the backend + registry are up
+#     without rebuilding the full snapshot.
+#
+# Schedule: daily at 03:30 UTC. Picked to land 30 min before the Monday
+# 04:00 UTC citizen-snapshot cron (so failures show up *before* a bad
+# weekly bundle is published) and at the same time on other days for
+# consistency. GitHub Actions emails the repo owner on scheduled-workflow
+# failures by default — that is our notification channel for this.
+#
+# This workflow makes no commits: the .aep is produced in a tmp dir,
+# inspected, and discarded.
+
+name: Aletheia healthcheck
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * *"
+
+jobs:
+  sign-and-inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install signer dependencies
+        run: pip install 'cryptography>=42' 'requests>=2.31'
+
+      - name: Check that secrets are populated
+        env:
+          ALETHEIA_BACKEND_URL: ${{ secrets.ALETHEIA_BACKEND_URL }}
+          ALETHEIA_API_KEY: ${{ secrets.ALETHEIA_API_KEY }}
+        run: |
+          if [ -z "${ALETHEIA_BACKEND_URL}" ]; then
+            echo "::error::ALETHEIA_BACKEND_URL secret is empty. Set it under Settings → Secrets → Actions."
+            exit 2
+          fi
+          echo "ALETHEIA_BACKEND_URL is set (value masked)."
+          if [ -z "${ALETHEIA_API_KEY}" ]; then
+            echo "::warning::ALETHEIA_API_KEY is empty — signing will proceed without a bearer token."
+          else
+            echo "ALETHEIA_API_KEY is set (value masked)."
+          fi
+
+      - name: Sign current snapshot via backend (forced)
+        env:
+          ALETHEIA_BACKEND_URL: ${{ secrets.ALETHEIA_BACKEND_URL }}
+          ALETHEIA_API_KEY: ${{ secrets.ALETHEIA_API_KEY }}
+        run: |
+          mkdir -p /tmp/aletheia-healthcheck
+          python scripts/sign_snapshot.py \
+            --input citizen-service/artifacts/snapshot.json \
+            --output-dir /tmp/aletheia-healthcheck \
+            --mode backend
+
+      - name: Inspect returned .aep bundle
+        run: |
+          AEP=/tmp/aletheia-healthcheck/snapshot.aep
+          if [ ! -f "${AEP}" ]; then
+            echo "::error::Backend did not produce ${AEP}."
+            exit 1
+          fi
+          SIZE=$(stat -c %s "${AEP}")
+          echo "Bundle size: ${SIZE} bytes"
+          if [ "${SIZE}" -lt 1024 ]; then
+            echo "::error::Bundle suspiciously small (< 1KB); likely an error page."
+            exit 1
+          fi
+          python - <<'PY'
+          import hashlib, json, zipfile
+
+          path = "/tmp/aletheia-healthcheck/snapshot.aep"
+          with zipfile.ZipFile(path) as zf:
+              names = zf.namelist()
+              print("Entries:", names)
+
+              official_required = {
+                  "response.txt",
+                  "canonical.bin",
+                  "hash.sha256",
+                  "signature.sig",
+                  "timestamp.tsr",
+                  "metadata.json",
+                  "public_key.pem",
+              }
+              if official_required.issubset(names):
+                  metadata = json.loads(zf.read("metadata.json"))
+                  expected_hash = zf.read("hash.sha256").decode("utf-8", errors="replace").strip()
+                  canonical = zf.read("canonical.bin")
+                  actual_hash = hashlib.sha256(canonical).hexdigest()
+                  signature = zf.read("signature.sig").decode("ascii", errors="replace").strip()
+                  tsa_token = zf.read("timestamp.tsr").decode("ascii", errors="replace").strip()
+
+                  print("bundle.format          = official")
+                  print("metadata.algorithm     =", metadata.get("algorithm"))
+                  print("metadata.signed_at     =", metadata.get("signed_at"))
+                  print("metadata.signer        =", metadata.get("signer"))
+                  print("metadata.aletheia_id   =", metadata.get("aletheia_id"))
+                  print("metadata.aletheia_uuid =", metadata.get("aletheia_uuid"))
+                  print("metadata.policy_ver    =", metadata.get("policy_version"))
+                  print("signature.sig length   =", len(signature), "chars")
+
+                  if not signature:
+                      raise SystemExit("signature.sig is empty — backend did not return a signature.")
+                  if not metadata.get("aletheia_uuid"):
+                      raise SystemExit("aletheia_uuid missing — backend response was malformed.")
+                  if not tsa_token:
+                      raise SystemExit("timestamp.tsr is empty — timestamp evidence is missing.")
+                  if actual_hash != expected_hash:
+                      raise SystemExit(
+                          f"canonical.bin sha256={actual_hash} != hash.sha256={expected_hash}"
+                      )
+
+                  print("HEALTHCHECK OK — official backend evidence package")
+                  raise SystemExit(0)
+
+              if "manifest.json" not in names:
+                  raise SystemExit(
+                      "Neither the official evidence-package entries nor manifest.json are present."
+                  )
+
+              manifest = json.loads(zf.read("manifest.json"))
+              sig = zf.read("signature.b64").decode("ascii", errors="replace").strip() if "signature.b64" in names else ""
+              payload_bytes = zf.read("payload.json") if "payload.json" in names else b""
+              signed_manifest_bytes = (
+                  zf.read("signed_manifest.json") if "signed_manifest.json" in names else None
+              )
+
+          mode = manifest.get("mode")
+          print("bundle.format          = legacy")
+          print("manifest.mode          =", mode)
+          print("manifest.algorithm     =", manifest.get("algorithm"))
+          print("manifest.signed_at     =", manifest.get("signed_at"))
+          print("manifest.signer        =", manifest.get("signer"))
+          print("manifest.aletheia_id   =", manifest.get("aletheia_id"))
+          print("manifest.aletheia_uuid =", manifest.get("aletheia_uuid"))
+          print("manifest.policy_ver    =", manifest.get("policy_version"))
+          print("manifest.tsa_included  =", manifest.get("tsa_token_included"))
+          print("signature.b64 length   =", len(sig), "chars")
+          if mode == "local_dev":
+              raise SystemExit(
+                  "Backend signing fell back to local_dev — this means the "
+                  "backend responded but the script's backend path was not taken. "
+                  "This should not happen with --mode backend."
+              )
+          if not sig:
+              raise SystemExit("signature.b64 is empty — backend did not return a signature.")
+          if not manifest.get("aletheia_uuid"):
+              raise SystemExit("aletheia_uuid missing — backend response was malformed.")
+          if signed_manifest_bytes is None:
+              raise SystemExit(
+                  "signed_manifest.json missing — expected in aep_format_version >= 0.2. "
+                  "Backend signs the attestation (not the full payload) to fit the 512 KiB cap."
+              )
+          signed_manifest = json.loads(signed_manifest_bytes)
+          print("signed_manifest.dataset        =", signed_manifest.get("dataset"))
+          print("signed_manifest.snapshot_sha256=", signed_manifest.get("snapshot_sha256"))
+          print("signed_manifest.bytes          =", signed_manifest.get("bytes"))
+          print("signed_manifest.places_count   =", signed_manifest.get("places_count"))
+          actual_payload_hash = hashlib.sha256(payload_bytes).hexdigest()
+          expected_payload_hash = str(signed_manifest.get("snapshot_sha256") or "")
+          if actual_payload_hash != expected_payload_hash:
+              raise SystemExit(
+                  f"payload.json sha256={actual_payload_hash} != signed_manifest.snapshot_sha256={expected_payload_hash}"
+              )
+          actual_manifest_hash = hashlib.sha256(signed_manifest_bytes).hexdigest()
+          expected_manifest_hash = str(manifest.get("signed_manifest_sha256") or "")
+          if expected_manifest_hash and actual_manifest_hash != expected_manifest_hash:
+              raise SystemExit(
+                  f"signed_manifest.json sha256={actual_manifest_hash} != manifest.signed_manifest_sha256={expected_manifest_hash}"
+              )
+          print("HEALTHCHECK OK — legacy backend bundle; mode=" + str(mode))
+          PY
+
+      # Attribution check: confirm that the URN we attach to every signed
+      # bundle (ALETHEIA_AGENT_ID) is actually a registered agent on the
+      # tenant our API key is scoped to. Without this, the URN can drift
+      # back to "label-only" status without any visible symptom — signing
+      # keeps succeeding because the backend accepts any agentId in the
+      # body (it does not validate registration), but the audit ledger
+      # entry becomes orphan from any registered agent. We learned about
+      # this gap on 2026-05-06 — see commit f947be7 / PR #139 for the
+      # full rationale.
+      #
+      # GitHub Actions emails the repo owner on scheduled-workflow
+      # failures by default; same notification channel as the sign step.
+      - name: Attribution check (agent URN is in /api/v1/agents listing)
+        env:
+          ALETHEIA_BACKEND_URL: ${{ secrets.ALETHEIA_BACKEND_URL }}
+          ALETHEIA_API_KEY: ${{ secrets.ALETHEIA_API_KEY }}
+          ALETHEIA_AGENT_ID: ${{ secrets.ALETHEIA_AGENT_ID }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ALETHEIA_AGENT_ID:-}" ]; then
+            echo "::warning::ALETHEIA_AGENT_ID is empty — skipping registry check (signed bundles will be unattributed)."
+            exit 0
+          fi
+          body="$(curl -sS --fail-with-body -m 30 \
+            -H "Authorization: Bearer ${ALETHEIA_API_KEY}" \
+            "${ALETHEIA_BACKEND_URL%/}/api/v1/agents")"
+          match="$(printf '%s' "$body" | jq -r --arg id "$ALETHEIA_AGENT_ID" \
+            '.[] | select(.agentId == $id) | "name=\(.name) org=\(.organization) status=\(.status) trustScore=\(.trustScore)"')"
+          if [ -n "$match" ]; then
+            echo "REGISTRY OK — ${ALETHEIA_AGENT_ID}: ${match}"
+          else
+            echo "::error::Agent URN ${ALETHEIA_AGENT_ID} is NOT in /api/v1/agents listing on the API key's tenant."
+            echo "Visible agents on this tenant:"
+            printf '%s' "$body" | jq -r '.[] | "  - \(.agentId) (\(.name))"'
+            echo
+            echo "Likely causes (in order of likelihood):"
+            echo "  1. The agent was deleted from the Aletheia console UI."
+            echo "  2. ALETHEIA_API_KEY rotated to a different tenant; URN is on the old tenant."
+            echo "  3. Aletheia data wipe; re-register via PUT /api/v1/agents/{urn} from the bastion."
+            echo "Fix: re-register the agent (see commit history of scripts/sign_snapshot.py for the canonical body shape) or update ALETHEIA_AGENT_ID."
+            exit 1
+          fi

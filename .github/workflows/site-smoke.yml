@@ -1,0 +1,38 @@
+name: Site smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "45 5 * * 1"
+    - cron: "15 6 * * *"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Semantic smoke-test h2oatlas.ee
+        if: github.event_name != 'schedule' || github.event.schedule != '45 5 * * 1'
+        run: python3 scripts/smoke_live_site.py --base-url https://h2oatlas.ee
+
+      - name: Weekly Monday snapshot deadline smoke
+        if: github.event_name == 'schedule' && github.event.schedule == '45 5 * * 1'
+        run: |
+          SNAPSHOT_FLOOR="$(python3 - <<'PY'
+          from datetime import datetime, timedelta, timezone
+
+          now = datetime.now(timezone.utc)
+          monday = now - timedelta(days=now.weekday())
+          floor = monday.replace(hour=4, minute=0, second=0, microsecond=0)
+          print(floor.isoformat().replace("+00:00", "Z"))
+          PY
+          )"
+          python3 scripts/smoke_live_site.py \
+            --base-url https://h2oatlas.ee \
+            --require-generated-after "${SNAPSHOT_FLOOR}" \
+            --max-generated-age-hours 2.0

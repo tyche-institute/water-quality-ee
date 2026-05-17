@@ -1,0 +1,11 @@
+{
+  "aletheia_id": 458,
+  "aletheia_uuid": "caf2974a-7930-4bc9-ab08-f0b3c0bd0e40",
+  "algorithm": "ML-DSA-65",
+  "bundle_filename": "snapshot.aep",
+  "bundle_format": "official_evidence_package",
+  "mode": "backend",
+  "signed_at": "2026-05-11T21:59:38.737139368Z",
+  "signer": "water-quality-ee/b14e7e3b5eda",
+  "tsa_token_included": true
+}

@@ -1,0 +1,48 @@
+# Данные — не коммитим (могут быть большими, регенерируем)
+data/raw/
+data/processed/
+!data/processed/
+data/processed/*
+!data/processed/live_snapshot_evaluation.json
+data/audit/
+# AI Act Phase 3: локальные приватные ключи signer'а (never commit)
+data/keys/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+notebooks/*_executed.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Локальные секреты (токены не коммитить)
+.env
+
+# Внутренние черновики (заметки, ссылки, draft'ы вне docs/)
+notes/
+scratch/
+*.local.md
+
+# Frontend (Next.js)
+frontend/node_modules/
+frontend/.next/
+analytics-worker/node_modules/
+.wrangler/
+*.tsbuildinfo
+data/models/
+
+# Citizen-service промежуточные артефакты (регенерируемые)
+citizen-service/artifacts/coordinate_review_*
+citizen-service/artifacts/approximate_*
+
+# PDF-отчёт (генерируется из report.md)
+docs/report.pdf
