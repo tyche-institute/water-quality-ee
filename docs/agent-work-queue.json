@@ -1,0 +1,671 @@
+{
+  "version": 1,
+  "updated_at": "2026-05-13T18:10:01+03:00",
+  "execution_mode": "autonomous-by-default",
+  "tasks": [
+    {
+      "id": "A0-autonomous-operating-system",
+      "title": "Create autonomous execution system inside the repo",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [],
+      "deliverables": [
+        "docs/AUTONOMOUS_EXECUTION_MODEL.md",
+        "docs/AUTONOMOUS_ROADMAP.md",
+        "docs/DELIVERY_PROTOCOL.md",
+        "docs/agent-work-queue.json"
+      ],
+      "notes": "Foundational control plane for autonomous work."
+    },
+    {
+      "id": "A1-trust-claims-guardrails",
+      "title": "Make verification and trust wording machine-checkable",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [
+        "A0-autonomous-operating-system"
+      ],
+      "deliverables": [
+        "docs/trust_claims_contract.json",
+        "scripts/check_trust_claims.py",
+        "tests/test_trust_claims_contract.py",
+        "scripts/verify_release.sh integration"
+      ],
+      "notes": "Completed with release-gate integration and passing tests."
+    },
+    {
+      "id": "A2-trust-copy-centralization",
+      "title": "Centralize high-risk product trust copy into one source of truth",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [
+        "A1-trust-claims-guardrails"
+      ],
+      "deliverables": [
+        "single trust copy source",
+        "frontend usage updates",
+        "docs alignment updates"
+      ],
+      "notes": "Completed via frontend/app/lib/trust-copy.ts and usage checks."
+    },
+    {
+      "id": "A3-dashboard-controller-decomposition",
+      "title": "Reduce dashboard orchestration complexity by feature-domain decomposition",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [
+        "A1-trust-claims-guardrails"
+      ],
+      "deliverables": [
+        "smaller controller surface",
+        "reduced prop fan-out",
+        "targeted validations"
+      ],
+      "notes": "Completed. Controller/bootstrap/view-model entrypoints are composition-only, runtime responsibilities are split into domain hooks, and decomposition boundaries are guarded by tests."
+    },
+    {
+      "id": "A4-snapshot-payload-reduction",
+      "title": "Reduce frontend snapshot transfer cost",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [
+        "A3-dashboard-controller-decomposition"
+      ],
+      "deliverables": [
+        "payload strategy change",
+        "cache-safe loading logic",
+        "performance notes"
+      ],
+      "notes": "Completed. Main payload no longer ships per-place measurements or sample history; lazy details/history assets and frontend loaders were added and validated."
+    },
+    {
+      "id": "A5-data-ml-contracts",
+      "title": "Version production data and ML contracts",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [
+        "A1-trust-claims-guardrails"
+      ],
+      "deliverables": [
+        "contract docs",
+        "validation scripts",
+        "tests"
+      ],
+      "notes": "Completed. Machine-readable contract, validator, release-gate integration, and offline-safe frontend build path are in place."
+    },
+    {
+      "id": "A6-external-verification-path",
+      "title": "Complete backend verification path for published snapshots",
+      "priority": "P2",
+      "status": "done",
+      "class": "autonomous",
+      "dependencies": [
+        "A1-trust-claims-guardrails"
+      ],
+      "notes": "Completed in repo scope. Backend signing now prefers the official Aletheia evidence package download, the frontend verifier supports cryptographic verification of official bundles and integrity-only verification of legacy bundles, and release/docs/trust guards were updated for the transition window."
+    },
+    {
+      "id": "A7-doc-hygiene-and-status-alignment",
+      "title": "Align status docs and operator-facing notes with the current project state",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A0-autonomous-operating-system"
+      ],
+      "deliverables": [
+        "status doc cleanup",
+        "Terviseamet outreach status alignment",
+        "updated follow-up queue"
+      ],
+      "notes": "Completed. Residual status drift between phase docs and current operator notes was reduced and the follow-up queue was extended beyond the original roadmap."
+    },
+    {
+      "id": "A8-verify-surface-product-polish",
+      "title": "Unify verify and trust surfaces with the main product shell",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A2-trust-copy-centralization",
+        "A6-external-verification-path"
+      ],
+      "deliverables": [
+        "verify page shell cleanup",
+        "shared trust-surface styling",
+        "lightweight regression guard"
+      ],
+      "notes": "Completed. `/verify` now uses a server-page wrapper with metadata, a client subcomponent, and shared product styling instead of isolated inline-only presentation."
+    },
+    {
+      "id": "A9-shell-consistency-and-seo-followup",
+      "title": "Tighten app-shell consistency for metadata, trust entrypoints, and user guidance",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A8-verify-surface-product-polish"
+      ],
+      "deliverables": [
+        "page-level metadata consistency",
+        "verify entrypoint consistency",
+        "remaining shell/i18n gap list"
+      ],
+      "notes": "Completed for the current routing model. Metadata constants were centralized, `/verify` and root shell now share the same site-metadata source, the root footer disclaimer is language-aware, and `html lang` is aligned to the saved UI language before hydration. Full per-locale route SEO remains out of scope until the app adopts route-level localization."
+    },
+    {
+      "id": "A10-observability-activation",
+      "title": "Activate telemetry as an operational loop instead of dormant instrumentation",
+      "priority": "P2",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A4-snapshot-payload-reduction",
+        "A5-data-ml-contracts"
+      ],
+      "deliverables": [
+        "ingestion endpoint wiring",
+        "event review cadence",
+        "product KPI dashboard definition"
+      ],
+      "notes": "Completed end-to-end. The analytics worker is deployed at analytics.h2oatlas.ee with KV-backed counters, the Pages production and preview environments point to the live endpoint, smoke tests pass, and the remaining work is organizational cadence rather than technical activation."
+    },
+    {
+      "id": "A11-business-packaging",
+      "title": "Package the product for external stakeholders and partnership conversations",
+      "priority": "P2",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A7-doc-hygiene-and-status-alignment",
+        "A9-shell-consistency-and-seo-followup"
+      ],
+      "deliverables": [
+        "canonical one-page narrative",
+        "stakeholder package",
+        "partnership-ready deck inputs"
+      ],
+      "notes": "Completed. A partnership package now exists with a one-page narrative, stakeholder matrix, trust posture rules, and deck inputs for municipalities, NGOs, Terviseamet, academic, and civic-tech conversations."
+    },
+    {
+      "id": "A12-analytics-review-tooling",
+      "title": "Turn live telemetry counters into a reproducible operator review flow",
+      "priority": "P2",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A10-observability-activation"
+      ],
+      "deliverables": [
+        "KV review helper script",
+        "review-flow regression tests",
+        "observability runbook update"
+      ],
+      "notes": "Completed. Operators can now pull a 7-day analytics summary directly from the live Cloudflare KV namespace with a single repo script instead of manually querying counters in the dashboard."
+    },
+    {
+      "id": "A13-analytics-decision-layer",
+      "title": "Turn analytics review output into decision-ready findings and recommended actions",
+      "priority": "P2",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A12-analytics-review-tooling"
+      ],
+      "deliverables": [
+        "KPI threshold layer",
+        "findings and action recommendations",
+        "markdown weekly-review output"
+      ],
+      "notes": "Completed. The analytics review helper now interprets KPI ranges, flags weak funnels, and emits a markdown-ready weekly review with findings and recommended product actions."
+    },
+    {
+      "id": "A14-release-gate-preflight-hardening",
+      "title": "Make the release gate fail with actionable setup diagnostics instead of opaque environment errors",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A1-trust-claims-guardrails",
+        "A5-data-ml-contracts"
+      ],
+      "deliverables": [
+        "verify_release preflight checks",
+        "targeted regression tests",
+        "operations doc update"
+      ],
+      "notes": "Completed. The release gate now checks core Python/frontend prerequisites up front and fails with explicit install guidance instead of surfacing setup drift as a later-stage validation failure."
+    },
+    {
+      "id": "A15-program-status-baseline",
+      "title": "Create one canonical program-status view that separates repo completion from operational readiness",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A7-doc-hygiene-and-status-alignment"
+      ],
+      "deliverables": [
+        "program status doc",
+        "README linkage",
+        "ops linkage"
+      ],
+      "notes": "Completed. `docs/PROGRAM_STATUS.md` now states what is repo-ready, live-ready, and org-ready so status claims stay legible as the product transitions from project to service."
+    },
+    {
+      "id": "A16-execution-plan-next-wave",
+      "title": "Publish the next autonomous execution plan as an operating document inside the repo",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A15-program-status-baseline"
+      ],
+      "deliverables": [
+        "priority execution plan",
+        "P0/P1/P2 framing",
+        "30-day outcome definition"
+      ],
+      "notes": "Completed. `docs/EXECUTION_PLAN.md` captures the current autonomous priority order so future work can optimize for baseline hardening before expansion."
+    },
+    {
+      "id": "A17-frontend-validation-parity",
+      "title": "Restore local frontend validation parity so lint, typecheck, and build can run in the same autonomous environment",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A14-release-gate-preflight-hardening"
+      ],
+      "deliverables": [
+        "local Node toolchain",
+        "successful frontend lint/typecheck/build run",
+        "updated status note"
+      ],
+      "notes": "Completed. A local Node toolchain was found under `~/.nvm`, the full release gate now passes end-to-end including frontend lint/typecheck/build, and `verify_release.sh` was updated to search common local `.nvm` and project `.tools` Node installations automatically."
+    },
+    {
+      "id": "A18-ownership-access-model",
+      "title": "Make operational ownership and access boundaries explicit so the product can outgrow single-maintainer memory",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A15-program-status-baseline"
+      ],
+      "deliverables": [
+        "ownership/access runbook",
+        "ops/status/readme linkage",
+        "alignment regression tests"
+      ],
+      "notes": "Completed. `docs/OWNERSHIP_AND_ACCESS.md` now captures ownership domains, access boundaries, concentration risks, and the two-person resilience target, with tests guarding the key doc links."
+    },
+    {
+      "id": "A19-citizen-snapshot-builder-decomposition",
+      "title": "Reduce `build_citizen_snapshot.py` orchestration complexity by extracting publishable helper boundaries",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A16-execution-plan-next-wave"
+      ],
+      "deliverables": [
+        "latest/history helper extraction",
+        "place-row builder extraction",
+        "snapshot envelope builder extraction",
+        "decomposition regression tests"
+      ],
+      "notes": "Completed. The citizen snapshot builder now has explicit helpers for latest/history preparation, per-place record construction, and snapshot-envelope assembly, with targeted tests guarding dedupe/history/provenance behavior."
+    },
+    {
+      "id": "A20-data-loader-opendata-helper-extraction",
+      "title": "Reduce duplicated opendata parser mechanics in `src/data_loader.py` without changing XML parsing semantics",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A16-execution-plan-next-wave"
+      ],
+      "deliverables": [
+        "shared opendata record bootstrap helper",
+        "shared measurement-slot initialization helper",
+        "shared opendata frame-finalization helper",
+        "targeted decomposition tests"
+      ],
+      "notes": "Completed. The opendata parsers now share common record-bootstrap and frame-finalization helpers, reducing duplication across supluskoha/veevark/basseinid/joogivesi/mineraalvesi while preserving parser behavior under tests and the full release gate."
+    },
+    {
+      "id": "A21-citizen-snapshot-geocode-helper-extraction",
+      "title": "Extract per-place geocoding and county-resolution orchestration from `build_citizen_snapshot.py`",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A19-citizen-snapshot-builder-decomposition"
+      ],
+      "deliverables": [
+        "per-place coordinate resolution helper",
+        "county resolution helper",
+        "targeted geocoding/orchestration tests"
+      ],
+      "notes": "Completed. The snapshot builder now routes one-place coordinate and county resolution through explicit helpers, with tests covering manual overrides, hidden rows, and county inference behavior under the release gate."
+    },
+    {
+      "id": "A22-citizen-snapshot-model-bundle-extraction",
+      "title": "Extract model-training and bundle-persistence orchestration from `build_citizen_snapshot.py`",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A19-citizen-snapshot-builder-decomposition"
+      ],
+      "deliverables": [
+        "model training helper",
+        "bundle persistence helper",
+        "targeted model-bundle tests",
+        "LightGBM fallback hardening"
+      ],
+      "notes": "Completed. The snapshot builder now routes probability attachment and bundle persistence through explicit helpers, with targeted tests for the bundle contract and a more robust LightGBM fallback path when the Python package is present but its native runtime dependency is missing."
+    },
+    {
+      "id": "A23-citizen-snapshot-row-loop-extraction",
+      "title": "Extract snapshot row-loop orchestration and cache-persistence flow from `build_citizen_snapshot.py`",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A21-citizen-snapshot-geocode-helper-extraction",
+        "A22-citizen-snapshot-model-bundle-extraction"
+      ],
+      "deliverables": [
+        "snapshot row-loop helper",
+        "coordinate cache persistence helper",
+        "targeted row-loop tests",
+        "snapshot envelope LGBM-availability bug fix"
+      ],
+      "notes": "Completed. The per-place row loop and coordinate-cache persistence now live behind explicit helpers, tests cover visible/hidden/overridden row accumulation, and the snapshot envelope now derives LightGBM availability from the persisted model bundle instead of a leaked local variable."
+    },
+    {
+      "id": "A24-dashboard-runtime-collections-extraction",
+      "title": "Extract derived/filter/analytics composition from `use-dashboard-controller-runtime.ts`",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A3-dashboard-controller-decomposition"
+      ],
+      "deliverables": [
+        "collections runtime hook",
+        "runtime entrypoint shrink",
+        "decomposition regression update"
+      ],
+      "notes": "Completed. The dashboard runtime now delegates derived data, filter runtime, and analytics runtime composition to `use-dashboard-controller-collections-runtime.ts`, reducing orchestration density in `use-dashboard-controller-runtime.ts` while preserving the release baseline."
+    },
+    {
+      "id": "A25-dashboard-runtime-interaction-extraction",
+      "title": "Extract trust/actions/history-measurement composition from `use-dashboard-controller-runtime.ts`",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A24-dashboard-runtime-collections-extraction"
+      ],
+      "deliverables": [
+        "interaction runtime hook",
+        "runtime entrypoint simplification",
+        "updated decomposition regression tests"
+      ],
+      "notes": "Completed. The dashboard runtime now delegates trust, actions, and history-measurement composition to `use-dashboard-controller-interaction-runtime.ts`, leaving `use-dashboard-controller-runtime.ts` closer to a scene-level composition root."
+    },
+    {
+      "id": "A26-dashboard-content-split",
+      "title": "Split `dashboard-content.ts` into bounded content modules while preserving the facade import surface",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A24-dashboard-runtime-collections-extraction",
+        "A25-dashboard-runtime-interaction-extraction"
+      ],
+      "deliverables": [
+        "content type module",
+        "expert-mode content module",
+        "parameter content module",
+        "facade-level regression test"
+      ],
+      "notes": "Completed. `dashboard-content.ts` is now a thin facade that re-exports expert-mode copy, parameter content, and shared content types from dedicated modules, while existing consumers continue importing through the stable facade surface."
+    },
+    {
+      "id": "A27-dashboard-trust-domain-split",
+      "title": "Split `use-dashboard-trust.ts` into copy, explainers, and freshness subdomains",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A25-dashboard-runtime-interaction-extraction",
+        "A26-dashboard-content-split"
+      ],
+      "deliverables": [
+        "trust copy hook",
+        "trust explainers hook",
+        "trust freshness hook",
+        "decomposition regression test"
+      ],
+      "notes": "Completed. `use-dashboard-trust.ts` now acts as a composition entrypoint over dedicated copy, explainer, and freshness hooks, reducing responsibility density without changing the downstream runtime contract."
+    },
+    {
+      "id": "A28-dashboard-map-environment-split",
+      "title": "Split `use-dashboard-map-environment.ts` into responsive, county-geo, and header-scroll subhooks",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A24-dashboard-runtime-collections-extraction",
+        "A25-dashboard-runtime-interaction-extraction"
+      ],
+      "deliverables": [
+        "map mobile environment hook",
+        "county geo hook",
+        "header compact effect hook",
+        "decomposition regression test"
+      ],
+      "notes": "Completed. The map environment hook now composes dedicated responsive/viewport, county-geo enrichment, and header-scroll effects instead of keeping these unrelated responsibilities in one scene-state helper."
+    },
+    {
+      "id": "A29-dashboard-actions-domain-split",
+      "title": "Split `use-dashboard-actions.ts` into preference and map/filter action domains",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A25-dashboard-runtime-interaction-extraction",
+        "A28-dashboard-map-environment-split"
+      ],
+      "deliverables": [
+        "preference actions hook",
+        "map/filter actions hook",
+        "decomposition regression test"
+      ],
+      "notes": "Completed. `use-dashboard-actions.ts` now acts as a composition layer over preference-oriented actions and map/filter/mobile selection actions, reducing mixed responsibility density while preserving the runtime surface."
+    },
+    {
+      "id": "A30-dashboard-view-actions-split",
+      "title": "Split `use-dashboard-view-actions.ts` into info-page, preference, and filter/theme action domains",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A29-dashboard-actions-domain-split"
+      ],
+      "deliverables": [
+        "info page actions hook",
+        "view preference actions hook",
+        "view filter actions hook",
+        "decomposition regression test"
+      ],
+      "notes": "Completed. `use-dashboard-view-actions.ts` now composes dedicated info-page navigation, preference/sidebar actions, and geo/date/theme actions instead of mixing those concerns in one hook."
+    },
+    {
+      "id": "A31-dashboard-translations-split",
+      "title": "Split `dashboard-translations.ts` into language modules and shared translation types",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A26-dashboard-content-split"
+      ],
+      "deliverables": [
+        "translation type module",
+        "ru/et/en translation modules",
+        "small facade module",
+        "decomposition regression test"
+      ],
+      "notes": "Completed. The dashboard translation surface still exports `DASHBOARD_TRANSLATIONS`, but the copy now lives in dedicated per-language modules with shared typing instead of one large content monolith."
+    },
+    {
+      "id": "A32-shell-metadata-hardening-and-audit-refresh",
+      "title": "Tighten shell metadata semantics and refresh the product audit against the real release baseline",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A9-shell-consistency-and-seo-followup",
+        "A17-frontend-validation-parity",
+        "A18-ownership-access-model"
+      ],
+      "deliverables": [
+        "shared site route metadata helpers",
+        "conservative root Open Graph locale posture",
+        "verified audit/status/plan refresh"
+      ],
+      "notes": "Completed. Shared site-route helpers now reduce metadata drift across layout, sitemap, robots, OG, and `/verify`; the root layout no longer emits Open Graph locale alternates for a single multilingual URL; and the audit/status/plan docs now distinguish verified baseline from remaining productization work after a passing end-to-end release gate."
+    },
+    {
+      "id": "A33-freshness-policy-contract",
+      "title": "Make freshness and staleness thresholds explicit across UI, release docs, and live smoke",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A32-shell-metadata-hardening-and-audit-refresh"
+      ],
+      "deliverables": [
+        "machine-readable freshness policy",
+        "frontend freshness policy wiring",
+        "release and operations doc alignment",
+        "policy regression tests"
+      ],
+      "notes": "Completed. Dashboard freshness thresholds and scheduled live-smoke deadline settings now live in `frontend/app/lib/freshness-policy.json`; the UI imports the policy and tests guard release docs plus the weekly site-smoke workflow against silent drift."
+    },
+    {
+      "id": "A34-freshness-visual-state-hardening",
+      "title": "Make degraded freshness states visually explicit on primary trust surfaces",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A33-freshness-policy-contract"
+      ],
+      "deliverables": [
+        "desktop map freshness overlay rows",
+        "desktop selected-place freshness state block",
+        "mobile selected-place freshness state block",
+        "diagnostics freshness state styling",
+        "visual-state regression tests"
+      ],
+      "notes": "Completed. Freshness severity now has shared UI helpers, the desktop map overlay exposes compact data/model freshness rows, and desktop/mobile detail plus diagnostics surfaces carry `data-freshness-state` styling for aging, stale, and unknown states."
+    },
+    {
+      "id": "A35-live-ux-smoke-retry-wrapper",
+      "title": "Make post-deploy live browser smoke tolerant of short Cloudflare asset propagation windows",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A34-freshness-visual-state-hardening"
+      ],
+      "deliverables": [
+        "live-only UX smoke retry wrapper",
+        "frontend package script",
+        "operations and frontend docs",
+        "wrapper regression tests"
+      ],
+      "notes": "Completed. `npm run ux:smoke:live` now wraps the strict Playwright smoke with bounded live-site retries, preserving one-shot local smoke behavior while reducing false negatives during Cloudflare Pages propagation."
+    },
+    {
+      "id": "A36-release-decision-pr-artifact",
+      "title": "Turn release go/no-go judgment into a required pull request artifact",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A35-live-ux-smoke-retry-wrapper"
+      ],
+      "deliverables": [
+        "pull request template release artifact",
+        "release checklist linkage",
+        "operations doc linkage",
+        "alignment regression tests"
+      ],
+      "notes": "Completed. `.github/PULL_REQUEST_TEMPLATE.md` now carries the release decision checklist fields and hard-blocker reminder, and tests guard the template plus operations linkage so go/no-go judgment is visible before merge."
+    },
+    {
+      "id": "A37-rollback-drill-runbook",
+      "title": "Add a rollback drill that can be rehearsed from docs only",
+      "priority": "P0",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A36-release-decision-pr-artifact"
+      ],
+      "deliverables": [
+        "rollback drill document",
+        "operations and ownership linkage",
+        "README index linkage",
+        "alignment regression tests"
+      ],
+      "notes": "Completed. `docs/ROLLBACK_DRILL.md` now separates dry-run rehearsal from real incident rollback, lists exact commands and validation evidence, and tests guard the links plus required smoke/verify/evidence fields."
+    },
+    {
+      "id": "A38-playwright-ui-review-gate",
+      "title": "Add a reusable Playwright UI/UX review gate with screenshot evidence",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A35-live-ux-smoke-retry-wrapper"
+      ],
+      "deliverables": [
+        "full UI review runner",
+        "frontend package script",
+        "operator docs",
+        "alignment regression tests"
+      ],
+      "notes": "Completed. `npm run ui:review` now exercises desktop/mobile dashboard states, selected-place trust ordering, filters, dark theme, info tabs, and `/verify`, saving screenshots plus a JSON report for release evidence."
+    },
+    {
+      "id": "A39-selected-place-trust-order-hardening",
+      "title": "Keep selected-place first-read order focused on sample date, official status, provenance, then model context",
+      "priority": "P1",
+      "status": "done",
+      "class": "autonomous-followup",
+      "dependencies": [
+        "A34-freshness-visual-state-hardening",
+        "A38-playwright-ui-review-gate"
+      ],
+      "deliverables": [
+        "desktop selected-place trust-order layout update",
+        "mobile selected-place trust-order layout update",
+        "Playwright trust-order guard hardening",
+        "source-level regression tests"
+      ],
+      "notes": "Completed. Desktop and mobile selected-place surfaces now render sample date, official status, freshness/provenance, and verify/source before the model assessment, and the UI review script checks the explicit `data-trust-order` markers."
+    }
+  ]
+}

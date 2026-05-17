@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "source_snapshot": "citizen-service/artifacts/snapshot.json",
+  "frontend_snapshot": "frontend/public/data/snapshot.frontend.json",
+  "history_snapshot": "frontend/public/data/snapshot.history.json",
+  "details_snapshot": "frontend/public/data/snapshot.details.json",
+  "frontend_root_required": [
+    "generated_at",
+    "has_model_predictions",
+    "available_models",
+    "model_labels",
+    "data_catalog_url",
+    "disclaimer",
+    "places_count",
+    "place_kinds",
+    "domains",
+    "diagnostics",
+    "places",
+    "refresh_history"
+  ],
+  "frontend_place_required": [
+    "id",
+    "location",
+    "domain",
+    "place_kind",
+    "county",
+    "sample_date",
+    "official_compliant",
+    "coord_source",
+    "lat",
+    "lon",
+    "model_violation_prob",
+    "lr_violation_prob",
+    "rf_violation_prob",
+    "gb_violation_prob",
+    "lgbm_violation_prob",
+    "risk_level",
+    "has_model_prob",
+    "audit_bucket",
+    "deterministic_norms_violation",
+    "n_measured_norm_params",
+    "n_total_norm_params",
+    "norm_coverage_ratio",
+    "data_quality_flags",
+    "uncertainty_level",
+    "search_text",
+    "measurements_count"
+  ],
+  "frontend_place_forbidden": [
+    "measurements",
+    "sample_history"
+  ],
+  "source_snapshot_root_sync": [
+    "generated_at",
+    "model_version",
+    "git_sha",
+    "feature_hash_columns",
+    "available_models"
+  ],
+  "per_place_provenance_fields": [
+    "prediction_id",
+    "feature_hash",
+    "model_version"
+  ],
+  "allowed_available_models": [
+    "lr",
+    "rf",
+    "gb",
+    "lgbm"
+  ],
+  "allowed_risk_levels": [
+    "low",
+    "medium",
+    "high",
+    "unknown"
+  ],
+  "allowed_audit_buckets": [
+    "agree_pass",
+    "agree_violate",
+    "hidden_violation",
+    "hidden_pass",
+    "unknown"
+  ],
+  "allowed_uncertainty_levels": [
+    "low",
+    "medium",
+    "high"
+  ],
+  "allowed_data_quality_flags": [
+    "official_violation_without_published_exceedance",
+    "published_exceedance_without_official_violation",
+    "missing_official_label",
+    "sparse_published_parameter_coverage"
+  ],
+  "allowed_canonical_models": [
+    "LightGBM",
+    "Random Forest",
+    "Gradient Boosting",
+    "Logistic Regression"
+  ],
+  "max_history_entries_per_place": 12
+}

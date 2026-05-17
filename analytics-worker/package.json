@@ -1,0 +1,17 @@
+{
+  "name": "h2oatlas-analytics-worker",
+  "version": "0.1.0",
+  "description": "Cloudflare Worker that ingests lightweight frontend analytics events for h2oatlas.ee.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8788",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240725.0",
+    "typescript": "^5.4.5",
+    "wrangler": "^3.78.0"
+  }
+}

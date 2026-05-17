@@ -1,0 +1,78 @@
+name: Social monthly digest
+
+# Monthly digest post for h2oatlas.ee — runs only when manually triggered.
+# By default it does a dry-run (renders the post body to logs without
+# touching any social API), so you can preview the text + see which places
+# would be highlighted before deciding whether to actually publish.
+#
+# No automatic cron — every post goes out only after explicit user action.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Skip API calls (preview-only)"
+        type: boolean
+        default: true
+      lang:
+        description: "Post language"
+        type: choice
+        default: en
+        options: [en, et, ru]
+      target:
+        description: "Where to post"
+        type: choice
+        default: facebook
+        options: [facebook, none]
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Render digest body
+        id: render
+        run: |
+          BODY=$(node scripts/social/render-monthly-digest.mjs --lang "${{ inputs.lang }}")
+          # Save to file (multiline-safe for both stdout preview and the next step)
+          echo "$BODY" > /tmp/digest.txt
+          echo "----- DIGEST PREVIEW -----"
+          cat /tmp/digest.txt
+          echo "--------------------------"
+
+      - name: Post to Facebook
+        if: ${{ inputs.dry_run == false && inputs.target == 'facebook' }}
+        env:
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$FB_PAGE_ID" ] || [ -z "$FB_PAGE_ACCESS_TOKEN" ]; then
+            echo "::error::FB_PAGE_ID / FB_PAGE_ACCESS_TOKEN secrets not set"
+            exit 1
+          fi
+          BODY=$(cat /tmp/digest.txt)
+          # Post as a link post — FB will auto-fetch og:image / og:title from
+          # h2oatlas.ee, which is exactly the per-site OG meta we set up.
+          RESPONSE=$(curl -sS -X POST "https://graph.facebook.com/v18.0/${FB_PAGE_ID}/feed" \
+            --data-urlencode "message=${BODY}" \
+            --data-urlencode "link=https://h2oatlas.ee" \
+            --data-urlencode "access_token=${FB_PAGE_ACCESS_TOKEN}")
+          echo "FB response: $RESPONSE"
+          POST_ID=$(echo "$RESPONSE" | jq -r .id 2>/dev/null || echo "")
+          if [ -z "$POST_ID" ] || [ "$POST_ID" = "null" ]; then
+            echo "::error::Facebook post failed"
+            exit 1
+          fi
+          echo "✓ Posted to Facebook: $POST_ID"
+          echo "  URL: https://www.facebook.com/${POST_ID}"

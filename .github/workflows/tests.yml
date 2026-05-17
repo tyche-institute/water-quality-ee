@@ -1,0 +1,129 @@
+name: Tests
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Lint (ruff)
+        run: ruff check src/ citizen-service/ tests/ --select E,F,W --ignore E501,W291,W293
+
+  pytest:
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Create isolated Python environment
+        run: |
+          python -m venv .venv-ci
+          . .venv-ci/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest
+
+      - name: Trust claims
+        run: ./.venv-ci/bin/python scripts/check_trust_claims.py
+
+      - name: Data/ML contracts
+        run: ./.venv-ci/bin/python scripts/check_data_ml_contracts.py
+
+      - name: Frontend/backend norm sync
+        run: ./.venv-ci/bin/python scripts/check_water_norms_sync.py
+
+      - name: Pytest analytics and audit surfaces
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_analytics_review_script.py \
+            tests/test_analytics_worker_contract.py \
+            tests/test_audit_xml_field_coverage.py \
+            tests/test_backend_verification_path.py
+
+      - name: Pytest snapshot builder decomposition
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_citizen_snapshot_builder_decomposition.py
+
+      - name: Pytest snapshot geocode resolution
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_citizen_snapshot_geocode_resolution.py
+
+      - name: Pytest snapshot model bundle
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_citizen_snapshot_model_bundle.py
+
+      - name: Pytest snapshot row loop
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_citizen_snapshot_row_loop.py
+
+      - name: Pytest county inference surfaces
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_county_centroids.py \
+            tests/test_county_infer_seed.py
+
+      - name: Pytest dashboard decomposition
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_county_mapping.py \
+            tests/test_dashboard_actions_decomposition.py \
+            tests/test_dashboard_content_decomposition.py \
+            tests/test_dashboard_controller_decomposition.py \
+            tests/test_dashboard_main_content_decomposition.py \
+            tests/test_dashboard_map_environment_decomposition.py \
+            tests/test_dashboard_map_workspace_decomposition.py \
+            tests/test_dashboard_selected_place_workspace_decomposition.py \
+            tests/test_dashboard_translations_decomposition.py \
+            tests/test_dashboard_trust_decomposition.py
+
+      - name: Pytest contracts and loaders
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_dashboard_view_actions_decomposition.py \
+            tests/test_data_loader.py \
+            tests/test_data_loader_decomposition.py \
+            tests/test_data_ml_contracts.py \
+            tests/test_evaluate_threshold.py \
+            tests/test_features_meta.py \
+            tests/test_frontend_snapshot_contract.py \
+            tests/test_frontend_water_rules_sync.py \
+            tests/test_geocode_resolve.py \
+            tests/test_joogivesi_parse.py
+
+      - name: Pytest trust and release surfaces
+        run: |
+          ./.venv-ci/bin/python -m pytest -q -ra \
+            tests/test_label_vs_norms.py \
+            tests/test_operational_docs_alignment.py \
+            tests/test_release_gate_preflight.py \
+            tests/test_sign_snapshot.py \
+            tests/test_snapshot_payload_split.py \
+            tests/test_terviseamet_reference_coords.py \
+            tests/test_trust_claims_contract.py \
+            tests/test_trust_copy_centralization.py \
+            tests/test_verify_page_shell.py

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "purpose": "Prevent user-facing trust overclaims around verification and signatures.",
+  "rules": [
+    {
+      "id": "verify-copy-must-expose-integrity-language",
+      "files": [
+        "frontend/app/verify/verify-copy.ts"
+      ],
+      "must_contain": [
+        "integrityBadge",
+        "Package integrity matched, but signature was not fully verified",
+        "Пакет цел, но подпись не проверена полностью",
+        "Paketi terviklus klapib, kuid allkiri pole täielikult kontrollitav"
+      ]
+    },
+    {
+      "id": "verify-result-card-must-route-integrity-state",
+      "files": [
+        "frontend/app/verify/VerifyResultCard.tsx"
+      ],
+      "must_contain": [
+        "verificationLevel === \"integrity\"",
+        "t.integrityBadge"
+      ]
+    },
+    {
+      "id": "operations-must-state-backend-limitation",
+      "files": [
+        "docs/OPERATIONS.md"
+      ],
+      "must_contain": [
+        "integrity",
+        "do not describe backend verification as full cryptographic signature validation",
+        "not fully signature-verified"
+      ]
+    },
+    {
+      "id": "key-management-must-state-backend-limitation",
+      "files": [
+        "docs/key_management.md"
+      ],
+      "must_contain": [
+        "integrity",
+        "do not describe backend verification as full cryptographic signature validation",
+        "not fully signature-verified"
+      ]
+    },
+    {
+      "id": "product-must-state-verification-limitation",
+      "files": [
+        "docs/PRODUCT.md"
+      ],
+      "must_contain": [
+        "integrity",
+        "not fully signature-verified"
+      ]
+    },
+    {
+      "id": "verify-ui-must-not-overclaim-full-backend-verification",
+      "files": [
+        "frontend/app/verify/verify-copy.ts"
+      ],
+      "must_not_contain": [
+        "fully verified by the backend",
+        "full cryptographic verification for backend mode",
+        "полная криптографическая проверка backend",
+        "backend signature fully verified in browser"
+      ]
+    }
+  ]
+}

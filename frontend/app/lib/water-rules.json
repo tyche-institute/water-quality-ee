@@ -1,0 +1,66 @@
+{
+  "version": "2026-05-09",
+  "rules": {
+    "e_coli": {
+      "supluskoha": { "max": 500, "unit": "CFU/100 mL" },
+      "basseinid": { "exact": 0, "unit": "CFU/100 mL" },
+      "default": { "max": 500, "unit": "CFU/100 mL" }
+    },
+    "enterococci": {
+      "supluskoha": { "max": 200, "unit": "CFU/100 mL" },
+      "default": { "max": 200, "unit": "CFU/100 mL" }
+    },
+    "coliforms": {
+      "basseinid": { "exact": 0, "unit": "CFU/100 mL" }
+    },
+    "pseudomonas": {
+      "basseinid": { "exact": 0, "unit": "CFU/100 mL" }
+    },
+    "staphylococci": {
+      "basseinid": { "max": 20, "unit": "CFU/100 mL" }
+    },
+    "ph": {
+      "basseinid": { "min": 6.5, "max": 8.5, "unit": "pH" },
+      "veevark": { "min": 6.5, "max": 9.5, "unit": "pH" },
+      "joogivesi": { "min": 6.5, "max": 9.5, "unit": "pH" },
+      "default": { "min": 6.0, "max": 9.0, "unit": "pH" }
+    },
+    "nitrates": {
+      "default": { "max": 50, "unit": "mg/L" }
+    },
+    "nitrites": {
+      "default": { "max": 0.5, "unit": "mg/L" }
+    },
+    "ammonium": {
+      "default": { "max": 0.5, "unit": "mg/L" }
+    },
+    "fluoride": {
+      "default": { "max": 1.5, "unit": "mg/L" }
+    },
+    "manganese": {
+      "default": { "max": 0.05, "unit": "mg/L" }
+    },
+    "iron": {
+      "default": { "max": 0.2, "unit": "mg/L" }
+    },
+    "turbidity": {
+      "basseinid": { "max": 0.5, "unit": "NTU" },
+      "default": { "max": 4.0, "unit": "NTU" }
+    },
+    "color": {
+      "default": { "max": 20, "unit": "mg Pt/L" }
+    },
+    "chlorides": {
+      "default": { "max": 250, "unit": "mg/L" }
+    },
+    "sulfates": {
+      "default": { "max": 250, "unit": "mg/L" }
+    },
+    "free_chlorine": {
+      "basseinid": { "min": 0.5, "max": 1.5, "unit": "mg/L" }
+    },
+    "combined_chlorine": {
+      "basseinid": { "max": 0.5, "unit": "mg/L" }
+    }
+  }
+}

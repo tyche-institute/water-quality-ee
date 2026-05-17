@@ -1,0 +1,17 @@
+{
+  "n_total": 69071,
+  "n_violations": 8262,
+  "n_compliant": 60809,
+  "violation_pct": 11.96,
+  "n_train": 55256,
+  "n_test": 13815,
+  "n_features": 70,
+  "best_model": "LightGBM",
+  "best_metrics": {
+    "roc_auc": 0.9954,
+    "recall_violation": 0.951,
+    "precision_violation": 0.9003,
+    "f1_violation": 0.9249,
+    "accuracy": 0.9815
+  }
+}

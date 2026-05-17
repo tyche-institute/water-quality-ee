@@ -1,0 +1,39 @@
+water-quality-ee — H2O Atlas
+Copyright 2026 Tyche Institute and water-quality-ee contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+------------------------------------------------------------------------
+
+This product uses data from the Estonian Health Board (Terviseamet)
+open-data feed: <https://vtiav.sm.ee/index.php/?active_tab_id=A>.
+The data is republished here under the original open-data terms set by
+Terviseamet; redistribution and use of the data are governed by those
+terms and not by this License. This project is not affiliated with,
+endorsed by, or sponsored by Terviseamet.
+
+------------------------------------------------------------------------
+
+This product bundles or depends on the following third-party software:
+
+- scikit-learn (BSD-3-Clause) — <https://scikit-learn.org/>
+- LightGBM (MIT) — <https://github.com/microsoft/LightGBM>
+- pandas (BSD-3-Clause) — <https://pandas.pydata.org/>
+- numpy (BSD-3-Clause) — <https://numpy.org/>
+- matplotlib (Matplotlib license, BSD-compatible) — <https://matplotlib.org/>
+- SHAP (MIT) — <https://github.com/shap/shap>
+- Next.js (MIT) — <https://nextjs.org/>
+- workers-og (MIT) — <https://github.com/kvnang/workers-og>
+
+Their respective copyright notices and license terms apply to those
+components and are not affected by this NOTICE file.

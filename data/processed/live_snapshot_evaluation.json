@@ -1,0 +1,780 @@
+{
+  "generated_at": "2026-05-11T19:59:54.229235Z",
+  "snapshot_generated_at": "2026-05-11T18:18:55.907630+00:00",
+  "snapshot_model_version": "citizen-2026.82dc12f138df",
+  "canonical_model": "LightGBM",
+  "n_places": 2204,
+  "uncertainty_summary": {
+    "method": "latest_per_location_deterministic_norm_audit",
+    "audit_bucket_counts": {
+      "agree_pass": 1861,
+      "agree_violate": 136,
+      "hidden_violation": 33,
+      "hidden_pass": 174,
+      "unknown": 0
+    },
+    "uncertainty_level_counts": {
+      "low": 1079,
+      "medium": 1092,
+      "high": 33
+    },
+    "places_with_publication_gap": 33,
+    "flag_counts": {
+      "official_violation_without_published_exceedance": 33,
+      "published_exceedance_without_official_violation": 174,
+      "missing_official_label": 0,
+      "sparse_published_parameter_coverage": 947
+    }
+  },
+  "slices": {
+    "all": {
+      "title": "Latest-per-location live slice",
+      "description": "All places in the published latest-per-location snapshot.",
+      "n_places": 2204,
+      "metrics": {
+        "canonical": {
+          "n": 2204,
+          "violation_rate": 0.07667876588021778,
+          "roc_auc": 0.9951775874852797,
+          "recall_violation": 0.9644970414201184,
+          "precision_violation": 0.7836538461538461,
+          "brier_violation": 0.019513251942082033
+        },
+        "lr": {
+          "n": 2204,
+          "violation_rate": 0.07667876588021778,
+          "roc_auc": 0.9306572845034384,
+          "recall_violation": 0.8757396449704142,
+          "precision_violation": 0.41456582633053224,
+          "brier_violation": 0.09151152032292441
+        },
+        "rf": {
+          "n": 2204,
+          "violation_rate": 0.07667876588021778,
+          "roc_auc": 0.9947734178503409,
+          "recall_violation": 0.9467455621301775,
+          "precision_violation": 0.9142857142857143,
+          "brier_violation": 0.017694449174151118
+        },
+        "gb": {
+          "n": 2204,
+          "violation_rate": 0.07667876588021778,
+          "roc_auc": 0.9880479188171496,
+          "recall_violation": 0.9585798816568047,
+          "precision_violation": 0.7714285714285715,
+          "brier_violation": 0.02207050124324657
+        },
+        "lgbm": {
+          "n": 2204,
+          "violation_rate": 0.07667876588021778,
+          "roc_auc": 0.9951775874852797,
+          "recall_violation": 0.9644970414201184,
+          "precision_violation": 0.7836538461538461,
+          "brier_violation": 0.019513251942082033
+        }
+      },
+      "per_domain": {
+        "basseinid": {
+          "n": 622,
+          "violation_rate": 0.1639871382636656,
+          "roc_auc": 0.9922511312217195,
+          "recall_violation": 0.9901960784313726,
+          "precision_violation": 0.7769230769230769,
+          "brier_violation": 0.03850401148317332
+        },
+        "joogivesi": {
+          "n": 68,
+          "violation_rate": 0.16176470588235295,
+          "roc_auc": 0.9776714513556619,
+          "recall_violation": 0.9090909090909091,
+          "precision_violation": 0.8333333333333334,
+          "brier_violation": 0.04902070186450937
+        },
+        "supluskoha": {
+          "n": 186,
+          "violation_rate": 0.04838709677419355,
+          "roc_auc": 0.9990583804143126,
+          "recall_violation": 0.8888888888888888,
+          "precision_violation": 0.8888888888888888,
+          "brier_violation": 0.008736514150462218
+        },
+        "veevark": {
+          "n": 1328,
+          "violation_rate": 0.035391566265060244,
+          "roc_auc": 0.9961466274685667,
+          "recall_violation": 0.9361702127659575,
+          "precision_violation": 0.7719298245614035,
+          "brier_violation": 0.010616952393857218
+        }
+      }
+    },
+    "recent_90d": {
+      "title": "Recent 90-day slice",
+      "description": "Only places whose latest sample date is within the last 90 days.",
+      "n_places": 679,
+      "metrics": {
+        "canonical": {
+          "n": 679,
+          "violation_rate": 0.0898379970544919,
+          "roc_auc": 0.9929837126638017,
+          "recall_violation": 0.9836065573770492,
+          "precision_violation": 0.7317073170731707,
+          "brier_violation": 0.026507986648264543
+        },
+        "lr": {
+          "n": 679,
+          "violation_rate": 0.0898379970544919,
+          "roc_auc": 0.9523847418961218,
+          "recall_violation": 0.9344262295081968,
+          "precision_violation": 0.4789915966386555,
+          "brier_violation": 0.0816636169923916
+        },
+        "rf": {
+          "n": 679,
+          "violation_rate": 0.0898379970544919,
+          "roc_auc": 0.9967637540453075,
+          "recall_violation": 0.9344262295081968,
+          "precision_violation": 0.8382352941176471,
+          "brier_violation": 0.02606021385524611
+        },
+        "gb": {
+          "n": 679,
+          "violation_rate": 0.0898379970544919,
+          "roc_auc": 0.9859806886306967,
+          "recall_violation": 0.9508196721311475,
+          "precision_violation": 0.7160493827160493,
+          "brier_violation": 0.028648586911462753
+        },
+        "lgbm": {
+          "n": 679,
+          "violation_rate": 0.0898379970544919,
+          "roc_auc": 0.9929837126638017,
+          "recall_violation": 0.9836065573770492,
+          "precision_violation": 0.7317073170731707,
+          "brier_violation": 0.026507986648264543
+        }
+      }
+    },
+    "low_uncertainty": {
+      "title": "Low-uncertainty slice",
+      "description": "Places with `uncertainty_level = low`.",
+      "n_places": 1079,
+      "metrics": {
+        "canonical": {
+          "n": 1079,
+          "violation_rate": 0.10658016682113068,
+          "roc_auc": 0.9991430633231102,
+          "recall_violation": 0.991304347826087,
+          "precision_violation": 0.8201438848920863,
+          "brier_violation": 0.017531243444806437
+        },
+        "lr": {
+          "n": 1079,
+          "violation_rate": 0.10658016682113068,
+          "roc_auc": 0.9672469781706657,
+          "recall_violation": 0.9130434782608695,
+          "precision_violation": 0.481651376146789,
+          "brier_violation": 0.08842007699747602
+        },
+        "rf": {
+          "n": 1079,
+          "violation_rate": 0.10658016682113068,
+          "roc_auc": 0.999413674905286,
+          "recall_violation": 0.991304347826087,
+          "precision_violation": 0.9193548387096774,
+          "brier_violation": 0.01780408230796398
+        },
+        "gb": {
+          "n": 1079,
+          "violation_rate": 0.10658016682113068,
+          "roc_auc": 0.9989446148295147,
+          "recall_violation": 1.0,
+          "precision_violation": 0.8156028368794326,
+          "brier_violation": 0.019171054548677284
+        },
+        "lgbm": {
+          "n": 1079,
+          "violation_rate": 0.10658016682113068,
+          "roc_auc": 0.9991430633231102,
+          "recall_violation": 0.991304347826087,
+          "precision_violation": 0.8201438848920863,
+          "brier_violation": 0.017531243444806437
+        }
+      }
+    },
+    "high_uncertainty": {
+      "title": "High-uncertainty slice",
+      "description": "Places with `uncertainty_level = high` (publication-gap cases).",
+      "n_places": 33,
+      "metrics": {
+        "canonical": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.8484848484848485,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "lr": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.7878787878787878,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "rf": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.7575757575757576,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "gb": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.7878787878787878,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "lgbm": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.8484848484848485,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        }
+      }
+    },
+    "hidden_violation": {
+      "title": "Hidden-violation slice",
+      "description": "Official violation, but published parameters do not reproduce it.",
+      "n_places": 33,
+      "metrics": {
+        "canonical": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.8484848484848485,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "lr": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.7878787878787878,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "rf": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.7575757575757576,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "gb": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.7878787878787878,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        },
+        "lgbm": {
+          "n": 33,
+          "violation_rate": 1.0,
+          "roc_auc": null,
+          "recall_violation": 0.8484848484848485,
+          "precision_violation": 1.0,
+          "brier_violation": null
+        }
+      }
+    },
+    "hidden_pass": {
+      "title": "Hidden-pass slice",
+      "description": "Published exceedance, but official label remains compliant.",
+      "n_places": 174,
+      "metrics": {
+        "canonical": {
+          "n": 174,
+          "violation_rate": 0.0,
+          "roc_auc": null,
+          "recall_violation": 0.0,
+          "precision_violation": 0.0,
+          "brier_violation": null
+        },
+        "lr": {
+          "n": 174,
+          "violation_rate": 0.0,
+          "roc_auc": null,
+          "recall_violation": 0.0,
+          "precision_violation": 0.0,
+          "brier_violation": null
+        },
+        "rf": {
+          "n": 174,
+          "violation_rate": 0.0,
+          "roc_auc": null,
+          "recall_violation": 0.0,
+          "precision_violation": 0.0,
+          "brier_violation": null
+        },
+        "gb": {
+          "n": 174,
+          "violation_rate": 0.0,
+          "roc_auc": null,
+          "recall_violation": 0.0,
+          "precision_violation": 0.0,
+          "brier_violation": null
+        },
+        "lgbm": {
+          "n": 174,
+          "violation_rate": 0.0,
+          "roc_auc": null,
+          "recall_violation": 0.0,
+          "precision_violation": 0.0,
+          "brier_violation": null
+        }
+      }
+    },
+    "sparse_coverage": {
+      "title": "Sparse published coverage",
+      "description": "Places flagged with sparse published parameter coverage.",
+      "n_places": 947,
+      "metrics": {
+        "canonical": {
+          "n": 947,
+          "violation_rate": 0.03484688489968321,
+          "roc_auc": 0.9893906239639281,
+          "recall_violation": 0.9090909090909091,
+          "precision_violation": 0.8823529411764706,
+          "brier_violation": 0.010123881744282059
+        },
+        "lr": {
+          "n": 947,
+          "violation_rate": 0.03484688489968321,
+          "roc_auc": 0.8907897354286851,
+          "recall_violation": 0.7575757575757576,
+          "precision_violation": 0.5208333333333334,
+          "brier_violation": 0.0436652089300842
+        },
+        "rf": {
+          "n": 947,
+          "violation_rate": 0.03484688489968321,
+          "roc_auc": 0.9909654532192825,
+          "recall_violation": 0.8181818181818182,
+          "precision_violation": 1.0,
+          "brier_violation": 0.011288281510293798
+        },
+        "gb": {
+          "n": 947,
+          "violation_rate": 0.03484688489968321,
+          "roc_auc": 0.976709104170811,
+          "recall_violation": 0.8484848484848485,
+          "precision_violation": 0.9032258064516129,
+          "brier_violation": 0.010769038772983294
+        },
+        "lgbm": {
+          "n": 947,
+          "violation_rate": 0.03484688489968321,
+          "roc_auc": 0.9893906239639281,
+          "recall_violation": 0.9090909090909091,
+          "precision_violation": 0.8823529411764706,
+          "brier_violation": 0.010123881744282059
+        }
+      }
+    },
+    "abstain_excluded": {
+      "title": "Operational slice after abstention",
+      "description": "Places retained if we abstain on `high` uncertainty or missing model probability.",
+      "n_places": 2171,
+      "metrics": {
+        "canonical": {
+          "n": 2171,
+          "violation_rate": 0.06264394288346384,
+          "roc_auc": 0.9989485474779592,
+          "recall_violation": 0.9926470588235294,
+          "precision_violation": 0.75,
+          "brier_violation": 0.0177341251477632
+        },
+        "lr": {
+          "n": 2171,
+          "violation_rate": 0.06264394288346384,
+          "roc_auc": 0.9534000578118225,
+          "recall_violation": 0.8970588235294118,
+          "precision_violation": 0.3685800604229607,
+          "brier_violation": 0.08968866925680714
+        },
+        "rf": {
+          "n": 2171,
+          "violation_rate": 0.06264394288346384,
+          "roc_auc": 0.9995555716143951,
+          "recall_violation": 0.9926470588235294,
+          "precision_violation": 0.9,
+          "brier_violation": 0.01563973912706885
+        },
+        "gb": {
+          "n": 2171,
+          "violation_rate": 0.06264394288346384,
+          "roc_auc": 0.9982150599797659,
+          "recall_violation": 1.0,
+          "precision_violation": 0.7391304347826086,
+          "brier_violation": 0.020047075054717135
+        },
+        "lgbm": {
+          "n": 2171,
+          "violation_rate": 0.06264394288346384,
+          "roc_auc": 0.9989485474779592,
+          "recall_violation": 0.9926470588235294,
+          "precision_violation": 0.75,
+          "brier_violation": 0.0177341251477632
+        }
+      }
+    }
+  },
+  "calibration_by_domain": {
+    "basseinid": [
+      {
+        "bin": 1,
+        "prob_min": 0.0,
+        "prob_max": 0.01778216479221395,
+        "mean_predicted_violation": 0.015837761413596257,
+        "observed_violation_rate": 0.0,
+        "count": 61
+      },
+      {
+        "bin": 2,
+        "prob_min": 0.01778216479221395,
+        "prob_max": 0.031006967370970973,
+        "mean_predicted_violation": 0.01910537859666709,
+        "observed_violation_rate": 0.0,
+        "count": 63
+      },
+      {
+        "bin": 3,
+        "prob_min": 0.031006967370970973,
+        "prob_max": 0.042461734022672115,
+        "mean_predicted_violation": 0.038011885126026615,
+        "observed_violation_rate": 0.0,
+        "count": 63
+      },
+      {
+        "bin": 4,
+        "prob_min": 0.042461734022672115,
+        "prob_max": 0.05528564935581517,
+        "mean_predicted_violation": 0.0498082990499651,
+        "observed_violation_rate": 0.0,
+        "count": 62
+      },
+      {
+        "bin": 5,
+        "prob_min": 0.05528564935581517,
+        "prob_max": 0.06576568048265269,
+        "mean_predicted_violation": 0.06094675875483548,
+        "observed_violation_rate": 0.0,
+        "count": 62
+      },
+      {
+        "bin": 6,
+        "prob_min": 0.06576568048265269,
+        "prob_max": 0.07288421400772008,
+        "mean_predicted_violation": 0.06839507403685538,
+        "observed_violation_rate": 0.0,
+        "count": 62
+      },
+      {
+        "bin": 7,
+        "prob_min": 0.07288421400772008,
+        "prob_max": 0.1557910961155467,
+        "mean_predicted_violation": 0.0892648945578661,
+        "observed_violation_rate": 0.016129032258064516,
+        "count": 62
+      },
+      {
+        "bin": 8,
+        "prob_min": 0.1557910961155467,
+        "prob_max": 0.5735221623895175,
+        "mean_predicted_violation": 0.2855468308017526,
+        "observed_violation_rate": 0.03225806451612903,
+        "count": 62
+      },
+      {
+        "bin": 9,
+        "prob_min": 0.5735221623895175,
+        "prob_max": 0.9728819435463948,
+        "mean_predicted_violation": 0.8290965210432274,
+        "observed_violation_rate": 0.5967741935483871,
+        "count": 62
+      },
+      {
+        "bin": 10,
+        "prob_min": 0.9728819435463948,
+        "prob_max": 1.0,
+        "mean_predicted_violation": 0.9941459784358079,
+        "observed_violation_rate": 0.9841269841269841,
+        "count": 63
+      }
+    ],
+    "joogivesi": [
+      {
+        "bin": 1,
+        "prob_min": 0.0,
+        "prob_max": 0.04984673372387488,
+        "mean_predicted_violation": 0.03741809290671362,
+        "observed_violation_rate": 0.0,
+        "count": 7
+      },
+      {
+        "bin": 2,
+        "prob_min": 0.04984673372387488,
+        "prob_max": 0.078545883574103,
+        "mean_predicted_violation": 0.06669948118266436,
+        "observed_violation_rate": 0.0,
+        "count": 7
+      },
+      {
+        "bin": 3,
+        "prob_min": 0.078545883574103,
+        "prob_max": 0.1129300495805438,
+        "mean_predicted_violation": 0.1001619418674855,
+        "observed_violation_rate": 0.0,
+        "count": 7
+      },
+      {
+        "bin": 4,
+        "prob_min": 0.1129300495805438,
+        "prob_max": 0.12048891229445628,
+        "mean_predicted_violation": 0.11548802536347604,
+        "observed_violation_rate": 0.0,
+        "count": 6
+      },
+      {
+        "bin": 5,
+        "prob_min": 0.12048891229445628,
+        "prob_max": 0.14732059178052875,
+        "mean_predicted_violation": 0.1346446404698753,
+        "observed_violation_rate": 0.0,
+        "count": 7
+      },
+      {
+        "bin": 6,
+        "prob_min": 0.14732059178052875,
+        "prob_max": 0.1915833969380603,
+        "mean_predicted_violation": 0.17169873195726687,
+        "observed_violation_rate": 0.0,
+        "count": 7
+      },
+      {
+        "bin": 7,
+        "prob_min": 0.1915833969380603,
+        "prob_max": 0.27072530696005237,
+        "mean_predicted_violation": 0.2233933009882644,
+        "observed_violation_rate": 0.16666666666666666,
+        "count": 6
+      },
+      {
+        "bin": 8,
+        "prob_min": 0.27072530696005237,
+        "prob_max": 0.4591207159098867,
+        "mean_predicted_violation": 0.333772995680462,
+        "observed_violation_rate": 0.0,
+        "count": 7
+      },
+      {
+        "bin": 9,
+        "prob_min": 0.4591207159098867,
+        "prob_max": 0.8951711152879467,
+        "mean_predicted_violation": 0.6512882882617219,
+        "observed_violation_rate": 0.42857142857142855,
+        "count": 7
+      },
+      {
+        "bin": 10,
+        "prob_min": 0.8951711152879467,
+        "prob_max": 1.0,
+        "mean_predicted_violation": 0.9687100778359092,
+        "observed_violation_rate": 1.0,
+        "count": 7
+      }
+    ],
+    "supluskoha": [
+      {
+        "bin": 1,
+        "prob_min": 0.0,
+        "prob_max": 0.018163027463359627,
+        "mean_predicted_violation": 0.017402185993169672,
+        "observed_violation_rate": 0.0,
+        "count": 17
+      },
+      {
+        "bin": 2,
+        "prob_min": 0.018163027463359627,
+        "prob_max": 0.020143250843806082,
+        "mean_predicted_violation": 0.01852509660592605,
+        "observed_violation_rate": 0.0,
+        "count": 19
+      },
+      {
+        "bin": 3,
+        "prob_min": 0.020143250843806082,
+        "prob_max": 0.02470235505740172,
+        "mean_predicted_violation": 0.020764246498791793,
+        "observed_violation_rate": 0.0,
+        "count": 20
+      },
+      {
+        "bin": 4,
+        "prob_min": 0.02470235505740172,
+        "prob_max": 0.02830485595435539,
+        "mean_predicted_violation": 0.027249390245746102,
+        "observed_violation_rate": 0.0,
+        "count": 8
+      },
+      {
+        "bin": 5,
+        "prob_min": 0.02830485595435539,
+        "prob_max": 0.029144637793054207,
+        "mean_predicted_violation": 0.02830485595435539,
+        "observed_violation_rate": 0.0,
+        "count": 20
+      },
+      {
+        "bin": 7,
+        "prob_min": 0.029144637793054207,
+        "prob_max": 0.029528048779196236,
+        "mean_predicted_violation": 0.029161714929473045,
+        "observed_violation_rate": 0.0,
+        "count": 44
+      },
+      {
+        "bin": 8,
+        "prob_min": 0.029528048779196236,
+        "prob_max": 0.0305222201728228,
+        "mean_predicted_violation": 0.03018814341259183,
+        "observed_violation_rate": 0.0,
+        "count": 16
+      },
+      {
+        "bin": 9,
+        "prob_min": 0.0305222201728228,
+        "prob_max": 0.08361429734920234,
+        "mean_predicted_violation": 0.03490850257226915,
+        "observed_violation_rate": 0.0,
+        "count": 21
+      },
+      {
+        "bin": 10,
+        "prob_min": 0.08361429734920234,
+        "prob_max": 1.0,
+        "mean_predicted_violation": 0.4782446739585973,
+        "observed_violation_rate": 0.42857142857142855,
+        "count": 21
+      }
+    ],
+    "veevark": [
+      {
+        "bin": 1,
+        "prob_min": 0.0,
+        "prob_max": 0.021342343086862583,
+        "mean_predicted_violation": 0.017378206797441047,
+        "observed_violation_rate": 0.0,
+        "count": 133
+      },
+      {
+        "bin": 2,
+        "prob_min": 0.021342343086862583,
+        "prob_max": 0.02799028714889329,
+        "mean_predicted_violation": 0.02583400117813904,
+        "observed_violation_rate": 0.0,
+        "count": 124
+      },
+      {
+        "bin": 3,
+        "prob_min": 0.02799028714889329,
+        "prob_max": 0.028762786345535196,
+        "mean_predicted_violation": 0.028329541159920858,
+        "observed_violation_rate": 0.0,
+        "count": 137
+      },
+      {
+        "bin": 4,
+        "prob_min": 0.028762786345535196,
+        "prob_max": 0.031120675955581656,
+        "mean_predicted_violation": 0.029469648318137975,
+        "observed_violation_rate": 0.0,
+        "count": 134
+      },
+      {
+        "bin": 5,
+        "prob_min": 0.031120675955581656,
+        "prob_max": 0.04001408770893644,
+        "mean_predicted_violation": 0.03497384839649573,
+        "observed_violation_rate": 0.0,
+        "count": 135
+      },
+      {
+        "bin": 6,
+        "prob_min": 0.04001408770893644,
+        "prob_max": 0.05478877386874377,
+        "mean_predicted_violation": 0.04702669466680502,
+        "observed_violation_rate": 0.0,
+        "count": 134
+      },
+      {
+        "bin": 7,
+        "prob_min": 0.05478877386874377,
+        "prob_max": 0.06093175388889016,
+        "mean_predicted_violation": 0.05842065453286196,
+        "observed_violation_rate": 0.0,
+        "count": 131
+      },
+      {
+        "bin": 8,
+        "prob_min": 0.06093175388889016,
+        "prob_max": 0.06939245527725875,
+        "mean_predicted_violation": 0.06560571580099991,
+        "observed_violation_rate": 0.0,
+        "count": 134
+      },
+      {
+        "bin": 9,
+        "prob_min": 0.06939245527725875,
+        "prob_max": 0.10284612295493245,
+        "mean_predicted_violation": 0.08300601819592278,
+        "observed_violation_rate": 0.007692307692307693,
+        "count": 130
+      },
+      {
+        "bin": 10,
+        "prob_min": 0.10284612295493245,
+        "prob_max": 1.0,
+        "mean_predicted_violation": 0.4806397750993324,
+        "observed_violation_rate": 0.3382352941176471,
+        "count": 136
+      }
+    ]
+  },
+  "abstention": {
+    "policy": {
+      "abstain_if": [
+        "model probability is missing",
+        "uncertainty_level = high"
+      ],
+      "caution_if": [
+        "uncertainty_level = medium",
+        "sparse_published_parameter_coverage flag present"
+      ]
+    },
+    "coverage": {
+      "retained_places": 2171,
+      "retained_share": 0.98502722323049,
+      "abstained_places": 33
+    }
+  }
+}
